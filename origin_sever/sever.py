@@ -4,13 +4,7 @@ import urllib.parse
 import _thread
 
 
-# from utils import log
-
-def log(*args, **kwargs):
-    """
-    用这个log 代替 print
-    """
-    print('web', *args, **kwargs)
+from utils import log
 
 
 def html_content(path):
