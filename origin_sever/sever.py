@@ -5,70 +5,103 @@ import _thread
 
 
 from utils import log
+from routes import (
+    error,
+    route_dict,
+)
+
+# 定义一个 class 用于保存请求的数据
+class Request(object):
+    def __init__(self, r):
+        self.raw_data = r
+        # 只能 split 一次， 因为 body 中可能有换行
+        # 把 body 放入 request 中
+        header, self.body = r.split('\r\n\r\n', 1)
+        h = header.split('\r\n')
+        parts = h[0].split()
+        self.path = parts[1]
+        # 设置 request 的 method
+        self.method = parts[0]
+
+        self.path, self.query = parsed_path(self.path)
+        log('path 和 query', self.path, self.query)
+
+    def form(self):
+        body = urllib.parse.unquote_plus(self.body)
+        log('form', self.body)
+        log('form', body)
+        args = body.split('&')
+        f = {}
+        log('args', args)
+        for arg in args:
+            k, v = arg.split('=')
+            f[k] = v
+        log('form() 字典', f)
+        return f
 
 
-def html_content(path):
-    with open(path, encoding='utf-8') as f:
-        return f.read()
+def parsed_path(path):
+    index = path.find('?')
+    if index == -1:
+        return path, {}
+    else:
+        p = path[:index]
+        query_string = path[index + 1:]
+        args = query_string.split('&')
+        query = {}
+        for arg in args:
+            k, v = arg.split('=')
+            query[k] = v
+        return p, query
 
 
-def route_message():
+def request_form_connection(connection):
+    request = b''
+    buffer_size = 1024
+    while True:
+        r = connection.recv(buffer_size)
+        request += r
+        # 取到的数据长度不够 buffer_size 的时候， 说明数据已经取完了
+        if len(r) < buffer_size:
+            request = request.decode()
+            log('request\n{}'.format(request))
+            return request
+
+
+def response_for_request(request):
     """
-    主页的处理函数， 返回主页的响应
+    根据 path 调用相应的处理函数
+    没有处理的 path 会返回 404
     """
-    header = 'HTTP/1.1 233 OK\r\nContent-Type: text/html\r\n'
-    body = html_content('html_basic.html')
-    r = '{}\r\n{}'.format(header, body)
-    return r.encode()
+
+    r = route_dict()
+    response = r.get(request.path, error)
+    return response(request)
 
 
-def route_index():
-    header = 'Http/1.1 233 very OK\r\nContent-Type: text/html\r\n'
-    body = '<h1>Hello world</h1><img src="doge.gif"/>'
-    r = '{}\r\n{}'.format(header, body)
-    return r.encode()
-
-
-def route_image():
-    """
-    图片处理函数， 读取图片并生成响应返回
-    """
-    with open('doge.gif', 'rb') as f:
-        header = b'HTTP/1.1 200 OK\r\nContent-Type: image/gif\r\n\r\n'
-        image = header + f.read()
-        return image
-
-
-def error():
-    """
-    根据 code 返回不同的错误响应
-    目前只有 404
-    """
-    r = b'HTTP/1.1 404 NOT FOUND\r\nContent-Type: text/html\r\n\r\n<h1>NOT FOUND</h1>'
-    return r
-
-
-def response_for_path(path):
-    """
-    # http://localhost:3000/
-    # http://www.baidu.com/
-    根据 path 调用响应的处理函数
-    没有处理的 path 会返回404
-    """
-    r = {
-        '/': route_index,
-        '/message': route_message,
-        '/doge.gif': route_image,
-    }
-    response = r.get(path, error)
-
-    return response()
+def process_connection(connection):
+    with connection:
+        r = request_form_connection(connection)
+        # 因为 chrome 会发送空请求导致 split 得到空 list
+        # 所以这里判断一下防止程序崩溃
+        if len(r) > 0:
+            request = Request(r)
+            # 用 response_for_path 函数来得到 path 对应的响应内容
+            response = response_for_request(request)
+            # 把响应发给客户端
+            connection.sendall(request)
+        else:
+            connection.sendall(b'')
+            log('接收到了一个空请求')
 
 
 def run(host, port):
     """
     启动服务器
     """
+    # 初始化 socket 套路
+    # 使用 with 可以保证程序中断的时候正确关闭 socket 释放占用的端口
+    log('开始运行于', 'http://{}:{}'.format(host, port))
     with socket.socket() as s:
         # s.bind 用于绑定
         # 注意 bind 函数的参数是一个 tuple
@@ -87,26 +120,16 @@ def run(host, port):
             # 分别是 连接 和 客户端 ip 地址
             log('before accept')
             connection, address = s.accept()
+            log('ip<{}>\n'.format(address))
+
             with connection:
                 log('after accept')
-                #这里只读取了 1024 字节的内容， 应该用一个循环全部读取
+                r = request_form_connection(connection)
 
-                # recv 可以接受客户端发送过来的数据
-                # 参数是要接收的字节数
-                # 返回值是一个 bytes 类型
-                request = connection.recv(1024)
-                request = request.decode()
-                # bytes 类型调用 decode('utf-8') 来转换成一个字符串（str）
-                log('ip and request, {}\n{}'.format(address, request))
-                # 因为 chrome 会发送空请求导致 split 得到空 list
-                # 所以这里判断一下 split 得到的数据长度
-                parts = request.split()
-                log('parts', parts)
-
-                if len(parts) > 0:
-                    path = parts[1]
+                if len(r) > 0:
+                    request = Request(r)
                     # 用 response_for_path 函数来得到 path 对应的响应内容
-                    response = response_for_path(path)
+                    response = response_for_request(request)
                     # 把响应发送给客户端
                     connection.sendall(response)
                 else:
