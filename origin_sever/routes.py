@@ -103,7 +103,7 @@ def route_static(request):
         return r
 
 
-def error():
+def error(request):
     """
     根据 code 返回不同的错误响应
     目前只有 404
