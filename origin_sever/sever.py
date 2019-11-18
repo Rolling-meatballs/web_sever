@@ -1,7 +1,7 @@
 import socket
 import urllib.parse
 
-import _thread
+import threading
 
 
 from utils import log
@@ -89,7 +89,7 @@ def process_connection(connection):
             # 用 response_for_path 函数来得到 path 对应的响应内容
             response = response_for_request(request)
             # 把响应发给客户端
-            connection.sendall(request)
+            connection.sendall(response)
         else:
             connection.sendall(b'')
             log('接收到了一个空请求')
@@ -101,7 +101,7 @@ def run(host, port):
     """
     # 初始化 socket 套路
     # 使用 with 可以保证程序中断的时候正确关闭 socket 释放占用的端口
-    log('开始运行于', 'http://{}:{}'.format(host, port))
+    log('开始运行于', 'http://localhost:{}'.format(port))
     with socket.socket() as s:
         # s.bind 用于绑定
         # 注意 bind 函数的参数是一个 tuple
@@ -121,21 +121,23 @@ def run(host, port):
             log('before accept')
             connection, address = s.accept()
             log('ip<{}>\n'.format(address))
+            t = threading.Thread(target=process_connection, args=(connection,))
+            t.start()
 
-            with connection:
-                log('after accept')
-                r = request_form_connection(connection)
-
-                if len(r) > 0:
-                    request = Request(r)
-                    # 用 response_for_path 函数来得到 path 对应的响应内容
-                    response = response_for_request(request)
-                    # 把响应发送给客户端
-                    connection.sendall(response)
-                else:
-                    #为了解决 chrome 的空包 bug
-                    connection.send(b'')
-                    log('收到了一个空请求')
+            # with connection:
+            #     log('after accept')
+            #     r = request_form_connection(connection)
+            #
+            #     if len(r) > 0:
+            #         request = Request(r)
+            #         # 用 response_for_path 函数来得到 path 对应的响应内容
+            #         response = response_for_request(request)
+            #         # 把响应发送给客户端
+            #         connection.sendall(response)
+            #     else:
+            #         #为了解决 chrome 的空包 bug
+            #         connection.send(b'')
+            #         log('收到了一个空请求')
 
             # # b'' 表示这是一个 bytes 对象
             # # 跟之前先写 str 再 encode 是一样的
