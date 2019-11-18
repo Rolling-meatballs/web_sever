@@ -60,7 +60,7 @@ def route_register(request):
     return r.encode()
 
 
-message_list = []
+# message_list = []
 
 
 def route_message(request):
@@ -79,13 +79,14 @@ def route_message(request):
     if 'message' in data:
         log('post', data)
         # 应该在这里保存 message_list
-        # m = Massage.new(data)
-        # m.save()
-        message_list.append(data)
+        m = Message.new(data)
+        m.save()
+        # message_list.append(data)
 
     header = 'HTTP/1.1 210 VERY OK\r\nContent-Type: text/html\r\n'
     body = template('html_basic.html')
-    ms = '<br>'.join([str(m) for m in message_list])
+    # ms = '<br>'.join([str(m) for m in message_list])
+    ms = '<br>'.join([str(m) for m in Message.all()])
     body = body.replace('{{message}}', ms)
     r = header + '\r\n' + body
     return r.encode()
