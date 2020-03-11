@@ -1,30 +1,56 @@
 import socket
+import _thread
 import urllib.parse
 
 import threading
 
 
+from routes import route_dict
+from routes import route_static, error
 from utils import log
-from routes import (
-    error,
-    route_dict,
-)
+
 
 # 定义一个 class 用于保存请求的数据
 class Request(object):
     def __init__(self, r):
+        self.raw_data = ''
+        self.method = 'GET'
+        self.path = ''
+        self.query = {}
+        self.body = ''
+        self.headers = {}
+        self.cookies = {}
+
         self.raw_data = r
         # 只能 split 一次， 因为 body 中可能有换行
         # 把 body 放入 request 中
         header, self.body = r.split('\r\n\r\n', 1)
         h = header.split('\r\n')
+        # GET /profile HTTP/1.1
         parts = h[0].split()
         self.path = parts[1]
         # 设置 request 的 method
         self.method = parts[0]
 
+        self.add_headers(h[1:])
         self.path, self.query = parsed_path(self.path)
         log('path 和 query', self.path, self.query)
+
+    def add_headers(self, header):
+        """
+        Cookie: user=gua
+        Cookie: user=gua:1
+        """
+        lines = header
+        for lines in lines:
+            k, v = lines.split(':', 1)
+            self.headers[k] = v
+
+        if 'Cookie' in self.headers:
+            cookies = self.headers['Cookie']
+            # 浏览器发来的 cookie 只有一个值
+            k, v = cookies.split('=', 1)
+            self.cookies[k] = v
 
     def form(self):
         body = urllib.parse.unquote_plus(self.body)
@@ -32,11 +58,11 @@ class Request(object):
         log('form', body)
         args = body.split('&')
         f = {}
-        log('args', args)
+        # log('args', args)
         for arg in args:
             k, v = arg.split('=')
             f[k] = v
-        log('form() 字典', f)
+        # log('form() 字典', f)
         return f
 
 
@@ -81,17 +107,19 @@ def response_for_request(request):
 
 def process_connection(connection):
     with connection:
-        r = request_form_connection(connection)
-        # 因为 chrome 会发送空请求导致 split 得到空 list
-        # 所以这里判断一下防止程序崩溃
+        r = connection.recv(1024)
+        r = r.decode()
+        log('http 请求\n{}'.format(r))
         if len(r) > 0:
+            #把 body 放入 request 中
             request = Request(r)
             # 用 response_for_path 函数来得到 path 对应的响应内容
             response = response_for_request(request)
+            log('http 响应\n{}'.format(response))
             # 把响应发给客户端
             connection.sendall(response)
         else:
-            connection.sendall(b'')
+            # connection.sendall(b'')
             log('接收到了一个空请求')
 
 
@@ -139,15 +167,7 @@ def run(host, port):
             #         connection.send(b'')
             #         log('收到了一个空请求')
 
-            # # b'' 表示这是一个 bytes 对象
-            # # 跟之前先写 str 再 encode 是一样的
-            # http_response = "HTTP/1.1 233 dasdadjfs\r\n\r\n<h1>Hello world!</h1>"
-            # response = http_response.encode()
-            #
-            # # 用 sendall 发送给客户端
-            # connection.sendall(response)
-            # # 发送完毕后，关闭本次连接
-            # connection.close()
+
 
 if __name__ == '__main__':
     config = dict(
