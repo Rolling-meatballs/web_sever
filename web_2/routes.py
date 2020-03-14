@@ -43,8 +43,12 @@ def route_register(request):
         form = request.form()
         u = User.new(form)
         if u.validate_register():
-            u.save()
-            result = 'register succeed<br> <pre>{}</pre>'.format(User.all())
+            if u.id == None:
+                u.id = 1
+                u.save()
+                result = 'register succeed<br> <pre>{}</pre>'.format(User.all())
+            else:
+                result = 'user exist'
         else:
             result = 'lenght of username and password must bigger than two'
     else:
@@ -60,7 +64,7 @@ message_list = []
 
 
 def route_message(request):
-    log ('method of the times', request.method)
+    log('method of the times', request.method)
     if request.method == 'POST':
         data = request.form()
     elif request.method == 'GET':
@@ -73,7 +77,7 @@ def route_message(request):
         message_list.append(data)
 
     header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-    body = template('html_basic.html')
+    body = template('messages.html')
     ms = '<br>'.join([str(m) for m in message_list])
     body = body.replace('{{messages}}', ms)
     r = header + '\r\n' + body
