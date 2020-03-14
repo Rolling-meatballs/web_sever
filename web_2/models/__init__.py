@@ -20,10 +20,13 @@ def load(path):
 
 
 class Model(object):
+    def __init__(self, form):
+        self.id = form.get('id', None)
+
     @classmethod
     def db_path(cls):
         classname = cls.__name__
-        path = '{}.txt'.format(classname)
+        path = 'db/{}.txt'.format(classname)
         return path
 
     @classmethod
@@ -38,31 +41,58 @@ class Model(object):
         ms = [cls.new(m) for m in models]
         return ms
 
-    def save(self):
-        models = self.all()
-        log('models', models)
-        models.append(self)
-        data = [m.__dict__ for m in models]
-        path = self.db_path()
-        save(data, path)
-
     @classmethod
     def find_by(cls, **kwargs):
         models = cls.all()
         for model in models:
-            if model.username == kwargs:
+            exist = True
+            for k, v in kwargs.items():
+                if not hasattr(model, k) or not getattr(model, k) == v:
+                    exist = False
+                    break
+            if exist:
                 return model
-        return None
 
     @classmethod
     def find_all(cls, **kwargs):
         models = cls.all()
         result = []
         for model in models:
-            if model.password == kwargs:
+            exist = True
+            for k, v in kwargs.items():
+                if not hasattr(model, k) or not getattr(model, k) == v:
+                    exist = False
+                    break
+            if exist:
                 result.append(model)
-                continue
+
         return result
+
+    def insert(self, models):
+        if len(models) > 0:
+            self.id = models[-1].id + 1
+        else:
+            self.id = 1
+        models.append(self)
+
+    def update(self, models):
+        for i, m in enumerate(models):
+            if m.id == self.id:
+                models[i] = self
+                break
+
+    def save(self):
+        models = self.all()
+        log('models', models)
+
+        if self.id is None:
+            self.insert(models)
+        else:
+            self.update(models)
+
+        data = [m.__dict__ for m in models]
+        path = self.db_path()
+        save(data, path)
 
     def __repr__(self):
         classname = self.__class__.__name__
@@ -71,28 +101,3 @@ class Model(object):
         ]
         s = '\n'.join(properties)
         return '< {}\n{} >\n'.format(classname, s)
-
-
-class User(Model):
-    def __init__(self, form):
-        self.username = form.get('username', '')
-        self.password = form.get('password', '')
-        self.id = form.get('id', None)
-
-    def validate_login(self):
-        users = User.all()
-
-        for user in users:
-            if self.username == user.username and self.password == user.password:
-                return True
-        return False
-
-        # return self.username == 'gua' and self.password == '123'
-
-    def validate_register(self):
-        return len(self.username) > 2 and len(self.password) > 2
-
-class Message(Model):
-    def __init__(self, form):
-        self.message = form.get('message', '')
-        self.author = form.get('author', '')
