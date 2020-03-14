@@ -9,13 +9,20 @@ class User(Model):
         self.password = form.get('password', '')
         self.id = form.get('id', None)
 
-    def validate_login(self):
-        users = User.all()
+    @staticmethod
+    def guest():
+        return '[guest]'
 
-        for user in users:
-            if self.username == user.username and self.password == user.password:
-                return True
-        return False
+    def validate_login(self):
+        # users = User.all()
+        #
+        # for user in users:
+        #     if self.username == user.username and self.password == user.password:
+        #         return True
+        # return False
+
+        u = User.find_by(username=self.username, password=self.password)
+        return u is not None
 
         # return self.username == 'gua' and self.password == '123'
 

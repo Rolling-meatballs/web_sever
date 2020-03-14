@@ -1,7 +1,7 @@
 import socket
 import urllib.parse
 
-import threading
+# import threading
 import _thread
 
 from utils import log
@@ -43,9 +43,11 @@ class Request(object):
             self.headers[k] = v
 
         if 'Cookie' in self.headers:
-            cookies = self.headers['Cookie']
-            k, v = cookies.split('=', 1)
-            self.cookies[k] = v
+            cookies = self.headers['Cookie'].split(';')
+            log('original cookies', cookies)
+            for cookie in cookies:
+                k, v = cookie.split('=')
+                self.cookies[k] = v
 
     def form(self):
         body = urllib.parse.unquote_plus(self.body)
@@ -93,7 +95,7 @@ def response_for_request(request):
     rely on what path get function
     if do not find report 404
     """
-
+    request.path, request.query = parsed_path(request.path)
     r = route_dict()
     response = r.get(request.path, error)
     return response(request)
