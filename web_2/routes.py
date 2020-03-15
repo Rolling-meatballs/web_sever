@@ -3,6 +3,7 @@ from models.user import User
 from models.message import Message
 
 import random
+import json
 
 session = {}
 
@@ -170,8 +171,17 @@ def route_profile(request):
 
     if username == User.guest():
         header = 'HTTP/1.1 302 Internal Redirect\r\nContent-Type: text/html\r\nLocation: http://localhost:3000/login\r\n'
+        r = header + '\r\n'
     else:
-        
+        header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
+        information = User.find_by(username=username)
+        # information = json.dump(information, indent=2, ensure_ascii=False)
+        information = '{}'.format(information)
+        log('profile information', information)
+        body = template('profile.html')
+        body = body.replace('{{information}}', information)
+        r = header + '\r\n' + body
+    return r.encode()
 
 
 def route_dict():
