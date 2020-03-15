@@ -6,7 +6,7 @@ import _thread
 
 from utils import log
 
-from routes import error
+from routes import route_static, error
 from routes import route_dict
 
 
@@ -29,7 +29,7 @@ class Request(object):
         parts = h[0].split()
         self.path = parts[1]
         self.method = parts[0]
-        self.heads = parts[1:]
+        # self.heads = parts[1:]
         self.add_headers(h[1:])
 
         # self.path, self.query = parsed_path(self.path)
@@ -39,15 +39,19 @@ class Request(object):
 
         lines = header
         for line in lines:
-            k, v = line.split(':', 1)
+            k, v = line.split(': ', 1)
             self.headers[k] = v
 
         if 'Cookie' in self.headers:
-            cookies = self.headers['Cookie'].split(';')
+            # cookies = self.headers['Cookie'].split('; ')
+            cookies = self.headers['Cookie']
             log('original cookies', cookies)
-            for cookie in cookies:
-                k, v = cookie.split('=')
-                self.cookies[k] = v
+            k, v = cookies.split('=', 1)
+            # for cookie in cookies:
+            #     k, v = cookie.split('=')
+            #     self.cookies[k] = v
+            self.cookies[k] = v
+            log('dict cookies', self.cookies)
 
     def form(self):
         body = urllib.parse.unquote_plus(self.body)
@@ -104,13 +108,17 @@ def response_for_request(request):
 def process_connection(connection):
     with connection:
         # log('haha connection', connection)
-        r = request_from_connection(connection)
+        # r = request_from_connection(connection)
+        r = connection.recv(1024)
+        r = r.decode()
+        log('http request\n{}'.format(r))
         if len(r) > 0:
             request = Request(r)
             response = response_for_request(request)
+            log('http response\n{}'.format(response))
             connection.sendall(response)
         else:
-            connection.sendall(b'')
+            # connection.sendall(b'')
             log('accept a empty request')
 
 

@@ -5,9 +5,11 @@ from models import Model
 
 class User(Model):
     def __init__(self, form):
+        super().__init__(form)
         self.username = form.get('username', '')
         self.password = form.get('password', '')
-        self.id = form.get('id', None)
+        self.note = form.get('note', '')
+        # self.id = form.get('id', None)
 
     @staticmethod
     def guest():

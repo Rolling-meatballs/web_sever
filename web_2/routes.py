@@ -17,7 +17,7 @@ def random_string():
     for i in range(16):
         random_index = random.randint(0, len(seed) - 2)
         s += seed[random_index]
-        return s
+    return s
 
 
 def template(name):
@@ -37,14 +37,12 @@ def error(request, code=404):
 
 
 def current_user(request):
-    username = request.cookies.get('user', User.guest())
+    # username = request.cookies.get('user', User.guest())
     # username = request.cookies.get('user', '【游客】')
-    # session_id = request.cookies.get('session_id', '')
-    # username = session.get(session_id, User.guest())
+    session_id = request.cookies.get('session_id', '')
+    username = session.get(session_id, User.guest())
     # log('current_user_session_id', session_id)
-    log('current_user_cookies', request.cookies)
     log('current_user_username', username)
-    # username = session.get(session_id, User.guest())
     return username
 
 
@@ -86,7 +84,7 @@ def route_login(request):
         u = User(form)
         if u.validate_login():
             username = u.username
-            headers['Set-Cookie'] = 'user={}'.format(username)
+            # headers['Set-Cookie'] = 'user={}'.format(username)
             #session part
             #set a str
             session_id = random_string()
@@ -167,6 +165,15 @@ def route_static(request):
         return r
 
 
+def route_profile(request):
+    username = current_user(request)
+
+    if username == User.guest():
+        header = 'HTTP/1.1 302 Internal Redirect\r\nContent-Type: text/html\r\nLocation: http://localhost:3000/login\r\n'
+    else:
+        
+
+
 def route_dict():
     # log('Hi here is route')
     r = {
@@ -175,6 +182,7 @@ def route_dict():
         '/login': route_login,
         '/register': route_register,
         '/messages': route_message,
+        '/profile': route_profile,
     }
 
     return r
