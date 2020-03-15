@@ -1,10 +1,11 @@
 import json
 
 from utils import log
+from models import GuaEncoder, gua_decode
 
 
 def save(data, path):
-    s = json.dumps(data, indent=2, ensure_ascii=False)
+    s = json.dumps(data, indent=2, ensure_ascii=False, cls=GuaEncoder)
     with open(path, 'w+', encoding='utf-8') as f:
         log('save', path, s, data)
         f.write(s)
@@ -14,7 +15,7 @@ def load(path):
     with open(path, 'r', encoding='utf-8') as f:
         s = f.read()
         log('load s', type(s), s)
-        j = json.loads(s)
+        j = json.loads(s, object_hook=gua_decode)
         log('load j', type(j), j)
         return j
 
@@ -33,6 +34,18 @@ class Model(object):
     def new(cls, form):
         m = cls(form)
         return m
+
+    @classmethod
+    def delete(cls, id):
+        ms = cls.all()
+        for i, m in enumerate(ms):
+            if m.id == id:
+                del ms[i]
+                break
+
+        l = [m.__dict__ for m in ms]
+        path = cls.db_path()
+        save(l, path)
 
     @classmethod
     def all(cls):

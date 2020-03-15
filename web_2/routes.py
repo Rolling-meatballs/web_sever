@@ -1,11 +1,10 @@
 from utils import log
 from models.user import User
 from models.message import Message
+from models.session import Session
 
 import random
-import json
-
-session = {}
+# import json
 
 
 def random_string():
@@ -40,25 +39,51 @@ def error(request, code=404):
 def current_user(request):
     # username = request.cookies.get('user', User.guest())
     # username = request.cookies.get('user', '【游客】')
-    session_id = request.cookies.get('session_id', '')
-    username = session.get(session_id, User.guest())
+    # session_id = request.cookies.get('session_id', '')
+    # username = session.get(session_id, User.guest())
     # log('current_user_session_id', session_id)
-    log('current_user_username', username)
-    return username
+    # log('current_user_username', username)
+    if 'session_id' in request.cookies:
+        session_id = request.cookies['session_id']
+        s = Session.find_by(session_id=session_id)
+        if s is None or s.expired():
+            return User.guest()
+        else:
+            user_id = s.user_id
+            username = User.find_by(id=user_id)
+            if u is None:
+                return User.guest()
+            else:
+                return username
+    else:
+        return User.guest()
 
 
-def response_with_headers(headers):
+def response_with_headers(headers, code=200):
     """
     Content-Type: text/html
     Set-Cookie: user=gua
     :param headers:
     :return:
     """
-    header = 'HTTP/1.x 210 VERY OK\r\n'
+    header = 'HTTP/1.x {} VERY OK\r\n'.format(code)
     header += ''.join([
         '{}: {}\r\n'.format(k, v) for k, v in headers.items()
     ])
     return header
+
+
+def redirect(url):
+    """
+    client accept 302, then client check url in location, and request the url
+    :param url:
+    :return:
+    """
+    headers = {
+        'Location': url
+    }
+    r = response_with_headers(headers, 302) + '\r\n'
+    return r.encode()
 
 
 def route_index(request):
@@ -79,17 +104,23 @@ def route_login(request):
     }
     log('login, headers', request.headers)
     log('login, cookies', request.cookies)
-    username = current_user(request)
+    user_current = current_user(request)
     if request.method == 'POST':
         form = request.form()
-        u = User(form)
-        if u.validate_login():
-            username = u.username
+        user_login = User.login_user(form)
+        if user_login is not None:
+            # username = u.username
             # headers['Set-Cookie'] = 'user={}'.format(username)
             #session part
             #set a str
             session_id = random_string()
-            session[session_id] = username
+            form = dict(
+                session_id=session_id,
+                user_id=user_login.id,
+            )
+            # session[session_id] = username
+            s = Session.new(form)
+            s.save()
             headers['Set-Cookie'] = 'session_id={}'.format(session_id)
             result = 'login succeed'
         else:
@@ -99,7 +130,7 @@ def route_login(request):
 
     body = template('login.html')
     body = body.replace('{{result}}', result)
-    body = body.replace('{{username}}', username)
+    body = body.replace('{{username}}', user_current.username)
     header = response_with_headers(headers)
     r = '{}\r\n{}'.format(header, body)
     log('login response', r)
@@ -125,32 +156,50 @@ def route_register(request):
 
 
 def route_message(request):
-    log('session of the times', session)
-    username = current_user(request)
+    # log('session of the times', session)
+    # username = current_user(request)
     log('Here is user of message', username)
     # if False:
-    if username == User.guest():
-        return error(request)
+    # if username == User.guest():
+    #     return error(request)
+    # else:
+    #     log('Method of this times', request.method)
+    #     if request.method == 'POST':
+    #         data = request.form()
+    #     elif request.method == 'GET':
+    #         data = request.query
+    #     else:
+    #         raise ValueError('Unknown method')
+    #
+    #     if len(data) > 0:
+    #         log('post', data)
+    #         m = Message.new(data)
+    #         m.save()
+    #
+    #     header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
+    #     body = template('messages.html')
+    #     ms = '<br>'.join([str(m) for m in Message.all()])
+    #     body = body.replace('{{messages}}', ms)
+    #     r = header + '\r\n' + body
+    #     return r.encode()log('Method of this times', request.method)
+    if request.method == 'POST':
+        data = request.form()
+    elif request.method == 'GET':
+        data = request.query
     else:
-        log('Method of this times', request.method)
-        if request.method == 'POST':
-            data = request.form()
-        elif request.method == 'GET':
-            data = request.query
-        else:
-            raise ValueError('Unknown method')
+        raise ValueError('Unknown method')
 
-        if len(data) > 0:
-            log('post', data)
-            m = Message.new(data)
-            m.save()
+    if len(data) > 0:
+        log('post', data)
+        m = Message.new(data)
+        m.save()
 
-        header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-        body = template('messages.html')
-        ms = '<br>'.join([str(m) for m in Message.all()])
-        body = body.replace('{{messages}}', ms)
-        r = header + '\r\n' + body
-        return r.encode()
+    header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
+    body = template('messages.html')
+    ms = '<br>'.join([str(m) for m in Message.all()])
+    body = body.replace('{{messages}}', ms)
+    r = header + '\r\n' + body
+    return r.encode()
 
 
 def route_static(request):
@@ -182,6 +231,16 @@ def route_profile(request):
         body = body.replace('{{information}}', information)
         r = header + '\r\n' + body
     return r.encode()
+
+
+def login_required(route_function):
+    def f(request):
+        u = current_user(request)
+        if u.is_guest():
+            return redirect('/todo')
+        else:
+            return route_function(request)
+    return f
 
 
 def route_dict():

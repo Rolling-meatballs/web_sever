@@ -1,6 +1,7 @@
 from utils import log
 
 from models import Model
+from models.user_role import UserRole
 
 
 class User(Model):
@@ -9,13 +10,29 @@ class User(Model):
         self.username = form.get('username', '')
         self.password = form.get('password', '')
         self.note = form.get('note', '')
+        self.role = form.get('role', UserRole.normal)
         # self.id = form.get('id', None)
 
     @staticmethod
     def guest():
-        return '[guest]'
+        form = dict(
+            role=UserRole.guest,
+            username='[guest]',
+            id=-1,
+        )
+        u = User(form)
+        return u
 
-    def validate_login(self):
+    def is_guest(self):
+        return self.role == UserRole.guest
+
+    @classmethod
+    def login_user(cls, form):
+
+        u = User.find_by(username=self.username, password=self.password)
+        return u is not None
+
+    # def validate_login(self):
         # users = User.all()
         #
         # for user in users:
@@ -23,8 +40,8 @@ class User(Model):
         #         return True
         # return False
 
-        u = User.find_by(username=self.username, password=self.password)
-        return u is not None
+        # u = User.find_by(username=self.username, password=self.password)
+        # return u is not None
 
         # return self.username == 'gua' and self.password == '123'
 
