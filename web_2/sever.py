@@ -6,34 +6,37 @@ import _thread
 
 from utils import log
 
-from routes import route_static, error
-from routes import route_dict
+from routes import (
+    route_static,
+    error,
+    route_dict,
+    login_required,
+)
+
+from routes_todo import route_dict as routes_todo
 
 
 # define a Class for restoring request data
 class Request(object):
-    def __init__(self, r):
-        self.raw_data = ''
-        self.method = 'GET'
+    def __init__(self, raw_data):
+        header, self.body = raw_data.split('\r\n\r\n', 1)
+        h = header.split('\r\n')
+
+        parts = h[0].split()
+        self.method = parts[0]
+        path = parts[1]
         self.path = ''
         self.query = {}
-        self.body = ''
+        self.parse_path(path)
+        log('path and query', self.path, self.query)
+
         self.headers = {}
         self.cookies = {}
-
-        self.raw_data = r
-        # put the body into request
-        header, self.body = r.split('\r\n\r\n', 1)
-        h = header.split('\r\n')
-        # log('heads', h)
-        parts = h[0].split()
-        self.path = parts[1]
-        self.method = parts[0]
-        # self.heads = parts[1:]
         self.add_headers(h[1:])
+        # put the body into request
 
-        # self.path, self.query = parsed_path(self.path)
-        # log('path and query', self.path, self.query)
+        # log('heads', h)
+        # self.heads = parts[1:]
 
     def add_headers(self, header):
 
@@ -66,43 +69,65 @@ class Request(object):
         log('form() dictionary', f)
         return f
 
-
-def parsed_path(path):
-    index = path.find('?')
-    if index == -1:
-        return path, {}
-    else:
-        p = path[:index]
-        query_string = path[index + 1:]
-        args = query_string.split('&')
-        query = {}
-        for arg in args:
-            k, v = arg.split('=')
-            query[k] = v
-        return p, query
-
-
-def request_from_connection(connection):
-    request = b''
-    buffer_size = 1024
-    while True:
-        r = connection.recv(buffer_size)
-        request += r
-        if len(r) < buffer_size:
-            request = request.decode()
-            log('request\n {}'.format(request))
-            return request
+    def parse_path(self, path):
+        index = path.find('?')
+        if index == -1:
+            self.path = path
+            self.query = {}
+        else:
+            path, query_string = path.split('?', 1)
+            args = query_string.split('&')
+            query = {}
+            for arg in args:
+                k, v = arg.split('=')
+                query[k] = v
+            self.path = path
+            self.query = query
 
 
-def response_for_request(request):
-    """
-    rely on what path get function
-    if do not find report 404
-    """
-    request.path, request.query = parsed_path(request.path)
+# def parsed_path(path):
+#     index = path.find('?')
+#     if index == -1:
+#         return path, {}
+#     else:
+#         p = path[:index]
+#         query_string = path[index + 1:]
+#         args = query_string.split('&')
+#         query = {}
+#         for arg in args:
+#             k, v = arg.split('=')
+#             query[k] = v
+#         return p, query
+
+
+def response_for_path(request):
     r = route_dict()
+    r.update(routes_todo())
     response = r.get(request.path, error)
     return response(request)
+
+
+# def request_from_connection(connection):
+#     request = b''
+#     buffer_size = 1024
+#     while True:
+#         r = connection.recv(buffer_size)
+#         request += r
+#         if len(r) < buffer_size:
+#             request = request.decode()
+#             log('request\n {}'.format(request))
+#             return request
+
+
+# def response_for_request(request):
+#     """
+#     rely on what path get function
+#     if do not find report 404
+#     """
+#     request.path, request.query = parsed_path(request.path)
+#     r = route_dict()
+#     response = r.get(request.path, error)
+#     return response(request)
 
 
 def process_connection(connection):
@@ -114,7 +139,7 @@ def process_connection(connection):
         log('http request\n{}'.format(r))
         if len(r) > 0:
             request = Request(r)
-            response = response_for_request(request)
+            response = response_for_path(request)
             log('http response\n{}'.format(response))
             connection.sendall(response)
         else:

@@ -29,8 +29,8 @@ class User(Model):
     @classmethod
     def login_user(cls, form):
 
-        u = User.find_by(username=self.username, password=self.password)
-        return u is not None
+        u = User.find_by(username=form['username'], password=form['password'])
+        return u
 
     # def validate_login(self):
         # users = User.all()

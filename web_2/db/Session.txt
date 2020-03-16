@@ -1,0 +1,38 @@
+[
+  {
+    "id": 1,
+    "session_id": "smjnirahfvbnnnss",
+    "user_id": 1,
+    "expired_time": 1584351751.7873883
+  },
+  {
+    "id": 2,
+    "session_id": "mnvinnldscrssfcm",
+    "user_id": 1,
+    "expired_time": 1584351794.028499
+  },
+  {
+    "id": 3,
+    "session_id": "nfcevvcsnermvosb",
+    "user_id": 1,
+    "expired_time": 1584351799.1460326
+  },
+  {
+    "id": 4,
+    "session_id": "nscbbircvvcnodse",
+    "user_id": 1,
+    "expired_time": 1584362903.8845425
+  },
+  {
+    "id": 5,
+    "session_id": "ieihmnhkevnmcvob",
+    "user_id": 1,
+    "expired_time": 1584363357.2285464
+  },
+  {
+    "id": 6,
+    "session_id": "dakviojklcimedmn",
+    "user_id": 1,
+    "expired_time": 1584363549.4799972
+  }
+]

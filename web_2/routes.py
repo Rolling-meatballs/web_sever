@@ -51,7 +51,7 @@ def current_user(request):
         else:
             user_id = s.user_id
             username = User.find_by(id=user_id)
-            if u is None:
+            if username is None:
                 return User.guest()
             else:
                 return username
@@ -93,7 +93,7 @@ def route_index(request):
     header = 'HTTP/1.1 210 VERY OK\r\nContent-TYpe: text/html\r\n'
     body = template('index.html')
     username = current_user(request)
-    body = body.replace('{{username}}', username)
+    body = body.replace('{{username}}', username.username)
     r = header + '\r\n' + body
     return r.encode()
 
@@ -114,6 +114,7 @@ def route_login(request):
             #session part
             #set a str
             session_id = random_string()
+            log('user_login_id', user_login)
             form = dict(
                 session_id=session_id,
                 user_id=user_login.id,
@@ -158,7 +159,7 @@ def route_register(request):
 def route_message(request):
     # log('session of the times', session)
     # username = current_user(request)
-    log('Here is user of message', username)
+    # log('Here is user of message', username)
     # if False:
     # if username == User.guest():
     #     return error(request)
@@ -223,7 +224,7 @@ def route_profile(request):
         r = header + '\r\n'
     else:
         header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-        information = User.find_by(username=username)
+        information = User.find_by(username=username.username)
         # information = json.dump(information, indent=2, ensure_ascii=False)
         information = '{}'.format(information)
         log('profile information', information)
