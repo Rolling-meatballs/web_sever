@@ -85,7 +85,7 @@ class Model(object):
         if len(models) > 0:
             self.id = models[-1].id + 1
         else:
-            self.id = 1
+            self.id = 0
         models.append(self)
 
     def update(self, models):
@@ -101,7 +101,10 @@ class Model(object):
         if self.id is None:
             self.insert(models)
         else:
-            self.update(models)
+            # self.update(models)
+            for i, m in enumerate(models):
+                if m.id == self.id:
+                    models[i] = self
 
         data = [m.__dict__ for m in models]
         path = self.db_path()

@@ -34,5 +34,11 @@
     "session_id": "dakviojklcimedmn",
     "user_id": 1,
     "expired_time": 1584363549.4799972
+  },
+  {
+    "id": 7,
+    "session_id": "emavbekcjooabnrh",
+    "user_id": 1,
+    "expired_time": 1584367274.298112
   }
 ]

@@ -32,14 +32,18 @@ def index(request):
     # give a html
     todo_html = """
         <h3>
+            time:{}
             {} : {}
             <a href="/todo/edit?id={}">edit</a>
             <a href="/todo/delete?id={}">delete</a>
         </h3>
     """
+    time_format = '%Y/%m/%d %H:%M:%S'
+    value = Todo.created_time
+    dt = time.strftime(time_format, value)
     todo_html = ''.join([
         todo_html.format(
-            t.id, t.title, t.id, t.id
+            dt, t.id, t.title, t.id, t.id
         ) for t in todos
     ])
     # replace the band staff
@@ -92,7 +96,7 @@ def edit(request):
         return update_request(body)
 
 
-def update(request):
+def route_update(request):
     """
     update new todo data
     :param request:
@@ -115,6 +119,6 @@ def route_dict():
         '/todo/add': add,
         '/todo/delete': login_required(delete),
         '/todo/edit': login_required(edit),
-        '/todo/update': update,
+        '/todo/update': login_required(route_update),
     }
     return d
