@@ -8,6 +8,7 @@ from enum import(
 class UserRole(Enum):
     guest = auto()
     normal = auto()
+    administer = auto()
     # enum UserRole:
     #      guest
     #      normal

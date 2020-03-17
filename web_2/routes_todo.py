@@ -9,6 +9,7 @@ from routes import (
 )
 
 from utils import log
+import time
 
 
 def update_request(body):
@@ -32,18 +33,16 @@ def index(request):
     # give a html
     todo_html = """
         <h3>
-            time:{}
             {} : {}
+            <br>
             <a href="/todo/edit?id={}">edit</a>
             <a href="/todo/delete?id={}">delete</a>
         </h3>
+            created:{} update:{}
     """
-    time_format = '%Y/%m/%d %H:%M:%S'
-    value = Todo.created_time
-    dt = time.strftime(time_format, value)
     todo_html = ''.join([
         todo_html.format(
-            dt, t.id, t.title, t.id, t.id
+            t.id, t.title, t.id, t.id, t.created_time, t.updated_time,
         ) for t in todos
     ])
     # replace the band staff
@@ -64,6 +63,9 @@ def add(request):
 
     t = Todo.new(form)
     t.user_id = u.id
+    # created_time = Todo.the_time()
+    # log('now', created_time)
+    t.created_time = Todo.the_time()
     t.save()
     # Client retouches the index after update data
     # Client can show new data after give a new request
@@ -107,6 +109,7 @@ def route_update(request):
     todo_id = int(form['id'])
     t = Todo.find_by(id=todo_id)
     t.title = form['title']
+    t.updated_time = Todo.the_time()
     t.save()
 
     return redirect('/todo')

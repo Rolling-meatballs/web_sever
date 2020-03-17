@@ -234,6 +234,28 @@ def route_profile(request):
     return r.encode()
 
 
+def route_admin(request):
+    # admin page
+    users = User.all()
+    header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
+    body = template('admin.html')
+    ms = '<br>'.join([str(m) for m in users])
+    body = body.replace('{{users}}', ms)
+    r = header + '\r\n' + body
+    return r.encode()
+
+
+def route_admin_update(request):
+    form = request.form()
+    user_id = int(form['id'])
+    new_password = form['password']
+    t = User.find_by(id=user_id)
+    t.password = new_password
+    t.save()
+
+    return redirect('/admin/user')
+
+
 def login_required(route_function):
     def f(request):
         u = current_user(request)
@@ -241,6 +263,16 @@ def login_required(route_function):
             return redirect('/todo')
         else:
             return route_function(request)
+    return f
+
+
+def admin_required(route_function):
+    def f(request):
+        u = current_user(request)
+        if u.is_admin():
+            return route_function(request)
+        else:
+            return redirect('/login')
     return f
 
 
@@ -253,6 +285,8 @@ def route_dict():
         '/register': route_register,
         '/messages': route_message,
         '/profile': route_profile,
+        '/admin/user': admin_required(route_admin),
+        '/admin/user/update': admin_required(route_admin_update),
     }
 
     return r

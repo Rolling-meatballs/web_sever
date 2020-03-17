@@ -26,6 +26,9 @@ class User(Model):
     def is_guest(self):
         return self.role == UserRole.guest
 
+    def is_admin(self):
+        return self.role == UserRole.administer
+
     @classmethod
     def login_user(cls, form):
 

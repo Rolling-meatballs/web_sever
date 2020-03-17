@@ -40,5 +40,29 @@
     "session_id": "emavbekcjooabnrh",
     "user_id": 1,
     "expired_time": 1584367274.298112
+  },
+  {
+    "id": 8,
+    "session_id": "esvobsmifrblcbca",
+    "user_id": 1,
+    "expired_time": 1584410494.299643
+  },
+  {
+    "id": 9,
+    "session_id": "knncmkkmcosvrasn",
+    "user_id": 1,
+    "expired_time": 1584419272.590487
+  },
+  {
+    "id": 10,
+    "session_id": "mvcscsnckdnlmsjc",
+    "user_id": 1,
+    "expired_time": 1584419278.0322623
+  },
+  {
+    "id": 11,
+    "session_id": "foeresblccjsrvjv",
+    "user_id": 2,
+    "expired_time": 1584422240.8080122
   }
 ]

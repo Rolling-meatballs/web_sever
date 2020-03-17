@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+    <form action="/admin/user/update" method="post">
+        <input type="text" name="id" placeholder="input id">
+        <br>
+        <input type="text" name="password" placeholder="input password">
+        <br>
+        <button type="submit">Submit</button>
+        <br>
+        <a href="/index">Index</a>
+    </form>
+    <h3>{{users}}</h3>
+</body>
+</html>
