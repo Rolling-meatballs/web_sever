@@ -86,6 +86,8 @@ def response_with_headers(headers, code=200):
 def redirect(url, result=None, headers=None):
     """
     client accept 302, then client check url in location, and request the url
+    :param headers:
+    :param result:
     :param url:
     :return:
     """
@@ -94,13 +96,13 @@ def redirect(url, result=None, headers=None):
         log('redirect result', result)
         url = '{}?result={}'.format(url, result)
 
-    headers = {
+    header = {
         'Location': url,
     }
     if headers is not None:
-        h.update(headers)
+        header.update(headers)
 
-    r = response_with_headers(headers, 302) + '\r\n'
+    r = response_with_headers(header, 302) + '\r\n'
     return r.encode()
 
 
@@ -133,7 +135,7 @@ class GuaTemplate:
 
 
 def render_response(filename, **kwargs):
-    body = GuaTemplate.reder(filename, **kwargs)
+    body = GuaTemplate.render(filename, **kwargs)
     return html_response(body)
 
 
@@ -209,12 +211,7 @@ def route_profile(request):
 def route_admin(request):
     # admin page
     users = User.all()
-    header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-    body = template('admin.html')
-    ms = '<br>'.join([str(m) for m in users])
-    body = body.replace('{{users}}', ms)
-    r = header + '\r\n' + body
-    return r.encode()
+    return render_response('users.html', users=users)
 
 
 def route_admin_update(request):
@@ -244,7 +241,7 @@ def admin_required(route_function):
         if u.is_admin():
             return route_function(request)
         else:
-            return redirect('/login')
+            return redirect('/login/view')
     return f
 
 
@@ -255,7 +252,7 @@ def route_dict():
         '/static': route_static,
         '/message/view': message_view,
         '/message/get': add_message_get,
-        '/messages/post': add_message_post,
+        '/message/post': add_message_post,
         '/profile': route_profile,
         '/admin/user': admin_required(route_admin),
         '/admin/user/update': admin_required(route_admin_update),

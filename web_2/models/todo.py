@@ -15,10 +15,11 @@ class Todo(Model):
 
     @classmethod
     def update(cls, form):
-        log('updat_form', form)
-        todo_id = int(form['user_id'])
+        log('update_form', form)
+        todo_id = int(form['id'])
         t = Todo.find_by(id=todo_id)
         t.title = form['title']
+        t.updated_time = Todo.the_time()
         t.save()
 
     @staticmethod
@@ -27,3 +28,10 @@ class Todo(Model):
         time_format = '%Y/%m/%d %H:%M:%S'
         dt = time.strftime(time_format, value)
         return dt
+
+    @classmethod
+    def add(cls, form, user_id):
+        t = Todo.new(form)
+        t.user_id = user_id
+        t.created_time = Todo.the_time()
+        t.save()

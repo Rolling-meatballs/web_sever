@@ -1,7 +1,10 @@
 import json
 
 from utils import log
-from models.user_role import GuaEncoder, gua_decode
+from models.user_role import (
+    GuaEncoder,
+    gua_decode,
+)
 
 
 def save(data, path):

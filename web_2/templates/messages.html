@@ -41,7 +41,12 @@
             <button type="submit">GET 提交</button>
         </form>
         <div>
-            {{messages}}
+            {% for message in messages %}
+                Message id :({{ message.id }})
+                author: ({{ message.author }})
+                message: ({{ message.message }})
+                <br>
+            {% endfor %}
         </div>
     </body>
 </html>

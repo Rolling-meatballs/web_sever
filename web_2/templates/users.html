@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin</title>
+</head>
+<body>
+    <h1>users</h1>
+    <div>
+        {% for user in users %}
+            {{ user.id }}
+            <br>
+            {{ user.username }}
+            <br>
+            {{ user.password }}
+            <br><br>
+        {% endfor %}
+    </div>
+    <br><br><br><br><br><br>
+    <form action="/admin/users/update" method="post">
+        <input type="text" name="username" placeholder="input username">
+        <br>
+        <input type="text" name="password" placeholder="input password">
+        <br>
+        <button type="submit">Submit</button>
+        <br>
+        <a href="/index">Index</a>
+    </form>
+</body>
+</html>

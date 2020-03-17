@@ -1,4 +1,5 @@
 import time
+import random
 
 
 def log(*args, **kwargs):
@@ -9,3 +10,16 @@ def log(*args, **kwargs):
     value = time.localtime(int(time.time()))
     dt = time.strftime(time_format, value)
     print(dt, *args, **kwargs)
+
+
+def random_string():
+    """
+    give some strs.
+    :return:
+    """
+    seed = 'lksjdfasnchvieronnmbvmcx'
+    s = ''
+    for i in range(16):
+        random_index = random.randint(0, len(seed) - 2)
+        s += seed[random_index]
+    return s

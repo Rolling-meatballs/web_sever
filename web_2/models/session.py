@@ -1,7 +1,10 @@
 import time
 
 from models import Model
-from utils import log
+from utils import (
+    log,
+    random_string,
+)
 
 
 class Session(Model):
@@ -20,3 +23,14 @@ class Session(Model):
         result = self.expired_time < now
         log('expired', result, self.expired_time, now)
         return result
+
+    @classmethod
+    def add(cls, user_id):
+        session_id = random_string()
+        form = dict(
+            session_id=session_id,
+            user_id=user_id,
+        )
+        s = Session.new(form)
+        s.save()
+        return session_id

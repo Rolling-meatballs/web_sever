@@ -18,7 +18,7 @@ from utils import (
 def login_view(request):
     user_current = current_user(request)
     result = request.query.get('result', '')
-    return render_response('login.html', result, username=user_current.username)
+    return render_response('login.html', result=result, username=user_current.username)
 
 
 def login(request):
@@ -72,12 +72,12 @@ def update(request):
         form = request.form()
         log('admin update', form, form['username'], type(form['username']))
         username = form['username']
-        new_passowrd = form['password']
-        log('admin_update_info:', username, new_passoword)
+        new_password = form['password']
+        log('admin_update_info:', username, new_password)
         u = User.find_by(username=username)
         log('admin_u:', u)
         if u is not None:
-            u.password = new_passowrd
+            u.password = new_password
             u.save()
         else:
             return redirect('/admin/users')

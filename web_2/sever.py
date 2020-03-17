@@ -14,6 +14,7 @@ from routes import (
 )
 
 from routes_todo import route_dict as routes_todo
+from routes_user import route_dict as routes_user
 
 
 # define a Class for restoring request data
@@ -103,6 +104,7 @@ class Request(object):
 def response_for_path(request):
     r = route_dict()
     r.update(routes_todo())
+    r.update(routes_user())
     response = r.get(request.path, error)
     return response(request)
 

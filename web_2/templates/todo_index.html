@@ -11,8 +11,18 @@
         <br>
         <button type="submit">添加</button>
         <br>
-        <a href="/login">Login</a>
+        <a href="/login/view">Login</a>
     </form>
-    <div>{{todos}}</div>
+    <div>
+        {% for todo in todos %}
+        <h3>
+            {{ todo.id }} : {{ todo.title }}
+            <a href="/todo/edit?id={{ todo.id }}">edit</a>
+            <a href="/todo/delete?id={{ todo.id }}">delete</a>
+            <br>
+            creation:{{ todo.created_time }}, update:{{ todo.updated_time}}
+        </h3>
+        {% endfor %}
+    </div>
 </body>
 </html>
