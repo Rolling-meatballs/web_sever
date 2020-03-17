@@ -6,19 +6,13 @@ from routes import (
     current_user,
     response_with_headers,
     login_required,
+    GuaTemplate,
+    html_response,
+    render_response,
 )
 
 from utils import log
 import time
-
-
-def update_request(body):
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    header = response_with_headers(headers)
-    r = header + '\r\n' + body
-    return r.encode()
 
 
 def index(request):
@@ -29,27 +23,7 @@ def index(request):
     """
     u = current_user(request)
     todos = Todo.find_all(user_id=u.id)
-
-    # give a html
-    todo_html = """
-        <h3>
-            {} : {}
-            <br>
-            <a href="/todo/edit?id={}">edit</a>
-            <a href="/todo/delete?id={}">delete</a>
-        </h3>
-            created:{} update:{}
-    """
-    todo_html = ''.join([
-        todo_html.format(
-            t.id, t.title, t.id, t.id, t.created_time, t.updated_time,
-        ) for t in todos
-    ])
-    # replace the band staff
-    body = template('todo_index.html')
-    body = body.replace('{{todos}}', todo_html)
-
-    return update_request(body)
+    return render_response('todo_index.html', todos=todos)
 
 
 def add(request):
@@ -61,12 +35,9 @@ def add(request):
     form = request.form()
     u = current_user(request)
 
-    t = Todo.new(form)
-    t.user_id = u.id
+    Todo.add(form, u.id)
     # created_time = Todo.the_time()
     # log('now', created_time)
-    t.created_time = Todo.the_time()
-    t.save()
     # Client retouches the index after update data
     # Client can show new data after give a new request
     return redirect('/todo')
@@ -84,21 +55,17 @@ def edit(request):
     :param request:
     :return:
     """
-    u = current_user(request)
-    if u.is_guest():
-        redirect('/todo')
-    else:
-        # replace tag strings in template files
-        todo_id = int(request.query['id'])
-        t = Todo.find_by(id=todo_id)
-        body = template('todo_edit.html')
-        body = body.replace('{{todo_id}}', str(todo_id))
-        body = body.replace('{{todo_title}}', str(t.title))
+    # replace tag strings in template files
+    todo_id = int(request.query['id'])
+    t = Todo.find_by(id=todo_id)
+    # body = template('todo_edit.html')
+    # body = body.replace('{{todo_id}}', str(todo_id))
+    # body = body.replace('{{todo_title}}', str(t.title))
 
-        return update_request(body)
+    return render_response('todo_edit.html', todo=t)
 
 
-def route_update(request):
+def update(request):
     """
     update new todo data
     :param request:
@@ -106,11 +73,7 @@ def route_update(request):
     """
     form = request.form()
     log('todo updata', form, form['id'], type(form['id']))
-    todo_id = int(form['id'])
-    t = Todo.find_by(id=todo_id)
-    t.title = form['title']
-    t.updated_time = Todo.the_time()
-    t.save()
+    Todo.update(form)
 
     return redirect('/todo')
 
@@ -122,6 +85,6 @@ def route_dict():
         '/todo/add': add,
         '/todo/delete': login_required(delete),
         '/todo/edit': login_required(edit),
-        '/todo/update': login_required(route_update),
+        '/todo/update': login_required(update),
     }
     return d

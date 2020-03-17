@@ -1,3 +1,12 @@
+import os
+
+import urllib.parse
+
+from jinja2 import (
+    FileSystemLoader,
+    Environment,
+)
+
 from utils import log
 from models.user import User
 from models.message import Message
@@ -29,11 +38,12 @@ def template(name):
         return f.read()
 
 
-def error(request, code=404):
-    e = {
-        404: b'HTTP/1.1 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>',
-    }
-    return e.get(code, b'')
+def error(request):
+    """
+    :return different error request rely on code
+    :param request:
+    """
+    return b'HTTP/1.1 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>'
 
 
 def current_user(request):
@@ -73,17 +83,58 @@ def response_with_headers(headers, code=200):
     return header
 
 
-def redirect(url):
+def redirect(url, result=None, headers=None):
     """
     client accept 302, then client check url in location, and request the url
     :param url:
     :return:
     """
+    if result is not None:
+        result = urllib.parse.quote_plus(result)
+        log('redirect result', result)
+        url = '{}?result={}'.format(url, result)
+
     headers = {
-        'Location': url
+        'Location': url,
     }
+    if headers is not None:
+        h.update(headers)
+
     r = response_with_headers(headers, 302) + '\r\n'
     return r.encode()
+
+
+def html_response(body):
+    headers = {
+        'Content-Type': 'text/html',
+    }
+    header = response_with_headers(headers)
+    r = header + '\r\n' + body
+    return r.encode()
+
+
+def configured_environment():
+    path = os.path.join(os.path.dirname(__file__), 'templates')
+    log('test path', __file__, os.path.dirname(__file__), path)
+
+    loader = FileSystemLoader(path)
+
+    e = Environment(loader=loader)
+    return e
+
+
+class GuaTemplate:
+    e = configured_environment()
+
+    @classmethod
+    def render(cls, filename, **kwargs):
+        template = cls.e.get_template(filename)
+        return template.render(**kwargs)
+
+
+def render_response(filename, **kwargs):
+    body = GuaTemplate.reder(filename, **kwargs)
+    return html_response(body)
 
 
 def route_index(request):
@@ -98,109 +149,30 @@ def route_index(request):
     return r.encode()
 
 
-def route_login(request):
-    headers = {
-        'Content-Type': 'text/html',
-    }
-    log('login, headers', request.headers)
-    log('login, cookies', request.cookies)
-    user_current = current_user(request)
-    if request.method == 'POST':
-        form = request.form()
-        user_login = User.login_user(form)
-        if user_login is not None:
-            # username = u.username
-            # headers['Set-Cookie'] = 'user={}'.format(username)
-            #session part
-            #set a str
-            session_id = random_string()
-            log('user_login_id', user_login)
-            form = dict(
-                session_id=session_id,
-                user_id=user_login.id,
-            )
-            # session[session_id] = username
-            s = Session.new(form)
-            s.save()
-            headers['Set-Cookie'] = 'session_id={}'.format(session_id)
-            result = 'login succeed'
-        else:
-            result = 'username or password error'
-    else:
-        result = ''
-
-    body = template('login.html')
-    body = body.replace('{{result}}', result)
-    body = body.replace('{{username}}', user_current.username)
-    header = response_with_headers(headers)
-    r = '{}\r\n{}'.format(header, body)
-    log('login response', r)
-    return r.encode()
+def message_view(request):
+    message = Message.all()
+    result = request.query.get('result', '')
+    log('message_result', result)
+    return render_response('messages.html', result=result, messages=message)
 
 
-def route_register(request):
-    if request.method == 'POST':
-        form = request.form()
-        u = User.new(form)
-        if u.validate_register():
-            u.save()
-            result = 'register succeed<br> <pre>{}</pre>'.format(User.all())
-        else:
-            result = 'length of username and password must bigger than two'
-    else:
-        result = ''
-    body = template('register.html')
-    body = body.replace('{{result}}', result)
-    header = 'HTTP/1.1 210 VERY OK\r\nContent-Type: text/html\r\n'
-    r = header + '\r\n' + body
-    return r.encode()
-
-
-def route_message(request):
-    # log('session of the times', session)
-    # username = current_user(request)
-    # log('Here is user of message', username)
-    # if False:
-    # if username == User.guest():
-    #     return error(request)
-    # else:
-    #     log('Method of this times', request.method)
-    #     if request.method == 'POST':
-    #         data = request.form()
-    #     elif request.method == 'GET':
-    #         data = request.query
-    #     else:
-    #         raise ValueError('Unknown method')
-    #
-    #     if len(data) > 0:
-    #         log('post', data)
-    #         m = Message.new(data)
-    #         m.save()
-    #
-    #     header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-    #     body = template('messages.html')
-    #     ms = '<br>'.join([str(m) for m in Message.all()])
-    #     body = body.replace('{{messages}}', ms)
-    #     r = header + '\r\n' + body
-    #     return r.encode()log('Method of this times', request.method)
-    if request.method == 'POST':
-        data = request.form()
-    elif request.method == 'GET':
-        data = request.query
-    else:
-        raise ValueError('Unknown method')
-
+def add_message_get(request):
+    data = request.query
     if len(data) > 0:
-        log('post', data)
         m = Message.new(data)
-        m.save()
+        log('post_get', data)
 
-    header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n'
-    body = template('messages.html')
-    ms = '<br>'.join([str(m) for m in Message.all()])
-    body = body.replace('{{messages}}', ms)
-    r = header + '\r\n' + body
-    return r.encode()
+        m.save()
+    return redirect('/messages/view')
+
+
+def add_message_post(request):
+    data = request.form()
+    if len(data) > 0:
+        m = Message.new(data)
+        log('post', data)
+        m.save()
+    return redirect('/messages/view')
 
 
 def route_static(request):
@@ -281,9 +253,9 @@ def route_dict():
     r = {
         '/': route_index,
         '/static': route_static,
-        '/login': route_login,
-        '/register': route_register,
-        '/messages': route_message,
+        '/message/view': message_view,
+        '/message/get': add_message_get,
+        '/messages/post': add_message_post,
         '/profile': route_profile,
         '/admin/user': admin_required(route_admin),
         '/admin/user/update': admin_required(route_admin_update),
