@@ -34,11 +34,13 @@ class User(Model):
     @staticmethod
     def salted_password(password, salt='%&*&(*$#$(*&JKHIUKJHF'):
         salted = password + salt
-        hash = hashlib.sha256(salted.enconde()).hexdigest()
+        # log('salted', salted)
+        hash = hashlib.sha256(salted.encode()).hexdigest()
         return hash
 
     @classmethod
     def login(cls, form):
+        log('login_form', form)
         salted = cls.salted_password(form['password'])
 
         u = User.find_by(username=form['username'], password=salted)
@@ -67,6 +69,7 @@ class User(Model):
         if valid:
             form['password'] = cls.salted_password(form['password'])
             u = User.new(form)
+            u.save()
             result = 'register is succeed<br> <pre>{}</pre>'.format(User.all())
             return u, result
         else:

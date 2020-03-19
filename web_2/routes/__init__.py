@@ -35,12 +35,13 @@ class GuaTemplate:
 def current_user(request):
     # username = request.cookies.get('user', User.guest())
     # username = request.cookies.get('user', '【游客】')
-    # session_id = request.coo kies.get('session_id', '')
+    # session_id = request.cookies.get('session_id', '')
     # username = session.get(session_id, User.guest())
     # log('current_user_session_id', session_id)
     # log('current_user_username', username)
     if 'session_id' in request.cookies:
         session_id = request.cookies['session_id']
+        log('curr_sess:', session_id)
         s = Session.find_by(session_id=session_id)
         if s is None or s.expired():
             return User.guest()
@@ -77,7 +78,7 @@ def formatted_header(headers, code=200):
     return header
 
 
-def redirect(url, result=None, headers=None):
+def redirect(url, session_id=None):
     """
     client accept 302, then client check url in location, and request the url
     :param headers:
@@ -85,18 +86,15 @@ def redirect(url, result=None, headers=None):
     :param url:
     :return:
     """
-    if result is not None:
-        result = urllib.parse.quote_plus(result)
-        log('redirect result', result)
-        url = '{}?result={}'.format(url, result)
-
     header = {
         'Location': url,
     }
-    if headers is not None:
-        header.update(headers)
+    if isinstance(session_id, str):
+        header.update({
+            'Set-Cookie': 'session_id={}; path=/'.format(session_id)
+        })
 
-    r = response_with_headers(header, 302) + '\r\n'
+    r = formatted_header(header, 302) + '\r\n'
     return r.encode()
 
 
@@ -114,7 +112,7 @@ def login_required(route_function):
     def f(request):
         u = current_user(request)
         if u.is_guest():
-            return redirect('/todo')
+            return redirect('/todo/index')
         else:
             return route_function(request)
     return f
@@ -126,5 +124,5 @@ def admin_required(route_function):
         if u.is_admin():
             return route_function(request)
         else:
-            return redirect('/login/view')
+            return redirect('/user/login/index')
     return f

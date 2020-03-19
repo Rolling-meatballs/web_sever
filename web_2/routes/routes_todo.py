@@ -97,7 +97,7 @@ def same_user_required(route_function):
 def route_dict():
 
     d = {
-        '/todo/index': login_required(index),
+        '/todo/index': index,
         '/todo/add': login_required(add),
         '/todo/delete': login_required(same_user_required(delete)),
         '/todo/edit': login_required(same_user_required(edit)),

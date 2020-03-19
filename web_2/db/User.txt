@@ -1,20 +1,11 @@
 [
   {
-    "id": 1,
+    "id": 0,
     "username": "gua",
-    "password": "123",
+    "password": "4cc058c0fce6c73a417ab95dc6c6bbb4b39e7f6b3b5c58b42fba780479cee2f0",
     "note": "",
     "role": {
       "__enum__": "normal"
-    }
-  },
-  {
-    "id": 2,
-    "username": "yang",
-    "password": "123",
-    "note": "admin",
-    "role": {
-      "__enum__": "administer"
     }
   }
 ]

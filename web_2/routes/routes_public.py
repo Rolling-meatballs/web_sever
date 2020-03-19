@@ -4,6 +4,7 @@ from utils import (
 )
 
 from models.message import Message
+from models.user import User
 from routes import (
     current_user,
     html_response,
@@ -20,7 +21,7 @@ def index(request):
 
 def message_index(request):
     message = Message.all()
-    log('message_result', result)
+    # log('message_result', result)
     return html_response('messages.html', messages=message)
 
 
@@ -57,7 +58,7 @@ def route_profile(request):
     username = current_user(request)
 
     if username == User.guest():
-        return redirect('/login/view')
+        return redirect('/login/index')
     else:
         information = User.find_by(username=username.username)
         # information = json.dump(information, indent=2, ensure_ascii=False)
@@ -86,7 +87,7 @@ def route_dict():
     r = {
         '/': index,
         '/static': static,
-        '/message/view': message_index,
+        '/message/index': message_index,
         '/message/get': message_add_get,
         '/message/post': message_add_post,
         '/profile': login_required(route_profile),

@@ -38,6 +38,7 @@ class Model(object):
     @classmethod
     def new(cls, form):
         m = cls(form)
+        log('new_user', m)
         return m
 
     @classmethod

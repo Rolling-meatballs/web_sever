@@ -16,7 +16,7 @@ from utils import (
 )
 
 
-def login_view(request):
+def login_index(request):
     user_current = current_user(request)
     result = request.query.get('result', '')
     result = unquote_plus(result)
@@ -24,17 +24,18 @@ def login_view(request):
 
 
 def login(request):
+    log('test_login')
     form = request.form()
-    user_current = current_user(request)
+    log('login_routes_form', form)
     user, result = User.login(form)
     if user.is_guest():
-        return redirect('/user/login/view?result={}'.format(result))
+        return redirect('/user/login/index?result={}'.format(result))
     else:
         session_id = Session.add(user_id=user.id)
-        return redirect('/user/login/view?result={}'.format(result), session_id)
+        return redirect('/user/login/index?result={}'.format(result), session_id)
 
 
-def register_view(request):
+def register_index(request):
     result = request.query.get('result', '')
     result = unquote_plus(result)
 
@@ -45,7 +46,7 @@ def register(request):
     form = request.form()
     u, result = User.register(form)
 
-    return redirect('/user/register/view?result={}'.format(quote(result)))
+    return redirect('/user/register/index?result={}'.format(quote(result)))
 
 
 def edit_password(request):
@@ -55,7 +56,7 @@ def edit_password(request):
     if user_current.is_admin():
         return html_response('admin_password_edit.html', users=u_all)
     else:
-        return redirect('/login/view')
+        return redirect('user/login/index')
 
 
 def update_user_password(request):
@@ -79,14 +80,14 @@ def update_user_password(request):
             return redirect('/edit_password')
         return redirect('/edit_password')
     else:
-        return redirect('/login/view')
+        return redirect('user/login/index')
 
 
 def route_dict():
     d = {
-        '/user/login/view': login_view,
+        '/user/login/index': login_index,
         '/user/login': login,
-        '/user/register/view': register_view,
+        '/user/register/index': register_index,
         '/user/register': register,
         '/edit_password': edit_password,
         '/edit_password/update': update_user_password,
