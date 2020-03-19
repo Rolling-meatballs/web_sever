@@ -94,5 +94,11 @@
     "session_id": "lrijaemnmdcjdevk",
     "user_id": 2,
     "expired_time": 1584450354.141172
+  },
+  {
+    "id": 17,
+    "session_id": "movmicivvaecmlsr",
+    "user_id": 1,
+    "expired_time": 1584494943.568726
   }
 ]

@@ -3,6 +3,8 @@ from utils import log
 from models import Model
 from models.user_role import UserRole
 
+import hashlib
+
 
 class User(Model):
     def __init__(self, form):
@@ -29,11 +31,23 @@ class User(Model):
     def is_admin(self):
         return self.role == UserRole.administer
 
-    @classmethod
-    def login_user(cls, form):
+    @staticmethod
+    def salted_password(password, salt='%&*&(*$#$(*&JKHIUKJHF'):
+        salted = password + salt
+        hash = hashlib.sha256(salted.enconde()).hexdigest()
+        return hash
 
-        u = User.find_by(username=form['username'], password=form['password'])
-        return u
+    @classmethod
+    def login(cls, form):
+        salted = cls.salted_password(form['password'])
+
+        u = User.find_by(username=form['username'], password=salted)
+        if u is not None:
+            result = 'login succeed'
+            return u, result
+        else:
+            result = 'username or password is wrong'
+            return User.guest(), result
 
     # def validate_login(self):
         # users = User.all()
@@ -47,6 +61,19 @@ class User(Model):
         # return u is not None
 
         # return self.username == 'gua' and self.password == '123'
+    @classmethod
+    def register(cls, form):
+        valid = len(form['username']) > 2 and len(form['password']) > 2
+        if valid:
+            form['password'] = cls.salted_password(form['password'])
+            u = User.new(form)
+            result = 'register is succeed<br> <pre>{}</pre>'.format(User.all())
+            return u, result
+        else:
+            result = 'length of username and password need longer than two'
+            return User.guest(), result
 
-    def validate_register(self):
-        return len(self.username) > 2 and len(self.password) > 2
+    @classmethod
+    def update(cls, u, new_password):
+        u.password = new_password
+        u.save()

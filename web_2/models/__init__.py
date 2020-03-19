@@ -6,6 +6,8 @@ from models.user_role import (
     gua_decode,
 )
 
+from utils import log
+
 
 def save(data, path):
     s = json.dumps(data, indent=2, ensure_ascii=False, cls=GuaEncoder)
@@ -46,9 +48,9 @@ class Model(object):
                 del ms[i]
                 break
 
-        l = [m.__dict__ for m in ms]
+        ls = [m.__dict__ for m in ms]
         path = cls.db_path()
-        save(l, path)
+        save(ls, path)
 
     @classmethod
     def all(cls):
