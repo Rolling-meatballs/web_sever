@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weibo</title>
+</head>
+<body>
+    <h1>Weibo</h1>
+    <form action="/weibo/add" method="post" >
+        <input type="text" name="title" placeholder="update weibo">
+        <br>
+        <button type="submit">submit</button>
+        <br>
+        <a href="/">index</a>
+    </form>
+    <div>
+        {% for weibo in weibos %}
+            <h3>
+                {{ weibo.id }} : {{ weibo.title }}
+                <a href="/weibo/edit?id={{ weibo.id }}">edit</a>
+                <a href="/weibo/delete?id={{ weibo.id }}">delete</a>
+            </h3>
+            {% for comment in comments %}
+                {{ comment.user }}:{{ comment.comment_title }}
+                <br>
+            {% endfor %}
+        <form action="/comment/add?id={{ weibo.id }}" method="post">
+            <input type="text" name="comment_title" placeholder="input comment">
+            <button type="submit">submit</button>
+            <br>
+        </form>
+        {% endfor %}
+    </div>
+</body>
+</html>
