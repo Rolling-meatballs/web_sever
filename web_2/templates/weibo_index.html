@@ -3,33 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Weibo</title>
+    <style>
+        .comment{
+            border: 1px red solid;
+        }
+    </style>
 </head>
 <body>
     <h1>Weibo</h1>
     <form action="/weibo/add" method="post" >
-        <input type="text" name="title" placeholder="update weibo">
+        <input type="text" name="content">
         <br>
         <button type="submit">submit</button>
         <br>
-        <a href="/">index</a>
     </form>
-    <div>
-        {% for weibo in weibos %}
-            <h3>
-                {{ weibo.id }} : {{ weibo.title }}
-                <a href="/weibo/edit?id={{ weibo.id }}">edit</a>
-                <a href="/weibo/delete?id={{ weibo.id }}">delete</a>
-            </h3>
-            {% for comment in comments %}
-                {{ comment.user }}:{{ comment.comment_title }}
-                <br>
+    <a href="/">index</a>
+    {% for weibo in weibos %}
+        <p>
+            {{ weibo.content }} from {{ user.username }}
+            <a href="/weibo/edit?id={{ weibo.id }}">edit</a>
+            <a href="/weibo/delete?id={{ weibo.id }}">delete</a>
+            {% for comment in w.comments() %}
+                <div class="comment">
+                    {{ comment.user().username }}:{{ comment.content }}
+                </div>
+                    <a href="/comment/edit?id={{ comment.id }}">edit</a>
+                    <a href="/comment/delete?id={{ comment.id }}">delete</a>
+                    <br>
             {% endfor %}
-        <form action="/comment/add?id={{ weibo.id }}" method="post">
-            <input type="text" name="comment_title" placeholder="input comment">
-            <button type="submit">submit</button>
-            <br>
-        </form>
-        {% endfor %}
-    </div>
+            <form action="/comment/add" method="post">
+                <input type="hidden" name="weibo_id" value="{{ weibo.id }}">
+                <input name="content">
+                <br>
+                <button type="submit">submit</button>
+            </form>
+        </p>
+    {% endfor %}
 </body>
 </html>

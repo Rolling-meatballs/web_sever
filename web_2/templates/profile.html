@@ -5,7 +5,10 @@
     <title>profile</title>
 </head>
 <body>
-    <h1>user information:</h1>
+    <h1>user information</h1>
         {{ information }}
+    <br>
+    <a href="/user/password?id={{ information.id }}">Password reset</a>
+<!--    <a href="/user/password">password reset</a>-->
 </body>
 </html>

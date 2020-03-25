@@ -1,22 +1,25 @@
 from models import Model
 from utils import log
-from models.weibo import Weibo
+# from models.weibo import Weibo
 
 
 class Comment(Model):
-    def __init__(self, form):
+
+    def __init__(self, form, user_id=-1):
         super().__init__(form)
-        self.title = form.get('comment_title', '')
-        self.comment_id = form.get('comment_id', -1)
-        self.weibo_id = form.get('weibo_id', -1)
-        self.user_id = form.get('user_id', -1)
+        self.content = form.get('content', '')
+        self.weibo_id = int(form.get('weibo_id', -1))
+        self.user_id = form.get('user_id', user_id)
 
     @classmethod
-    def add(cls, form, user_id, weibo_id):
+    def update(cls, form):
         log('add_form', form)
-        data = Comment.new(form)
+        comment_id = int(form['id'])
         # weibo_id = Weibo.id
-        data.comment_title = form['comment_title']
-        data.weibo_id = weibo_id
-        data.user_id = user_id
-        data.save()
+        w = Comment.find_by(id=comment_id)
+        w.content =form['content']
+        w.save()
+
+    def user(self):
+        u = User.find_by(id=self.user_id)
+        return u

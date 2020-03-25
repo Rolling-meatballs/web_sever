@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comment edit</title>
+</head>
+<body>
+    <h1>comment edit</h1>
+    <form action="/comment/update" method="post">
+        <input hidden="hidden" name="id" value="{{ comment.id }}">
+        <br>
+        <input name="content" value="{{ comment.content }}">
+        <br>
+        <button type="submit">submit</button>
+</body>
+</html>

@@ -54,17 +54,6 @@ def static(request):
         return r
 
 
-def route_profile(request):
-    username = current_user(request)
-
-    if username == User.guest():
-        return redirect('/login/index')
-    else:
-        information = User.find_by(username=username.username)
-        # information = json.dump(information, indent=2, ensure_ascii=False)
-    return html_response('profile.html', information=information)
-
-
 def route_admin(request):
     # admin page
     users = User.all()
@@ -90,7 +79,6 @@ def route_dict():
         '/message/index': message_index,
         '/message/get': message_add_get,
         '/message/post': message_add_post,
-        '/profile': login_required(route_profile),
         '/admin/user': admin_required(route_admin),
         '/admin/user/update': admin_required(route_admin_update),
     }

@@ -78,5 +78,6 @@ class User(Model):
 
     @classmethod
     def update(cls, u, new_password):
-        u.password = new_password
+        password = cls.salted_password(new_password)
+        u.password = password
         u.save()
