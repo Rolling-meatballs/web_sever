@@ -34,7 +34,7 @@ def response_for_path(request):
     r.update(user_routes())
     r.update(public_routes())
     r.update(weibo_routes())
-    response = r.get(request.path, error)
+    response = r.get(request.path, error) 
     return response(request)
 
 

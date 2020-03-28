@@ -4,6 +4,7 @@ from urllib.parse import (
 )
 
 from models.session import Session
+from models.sessionSQL import SessionSQL
 from models.user import User
 from routes import (
     current_user,
@@ -19,7 +20,7 @@ from utils import (
 )
 
 
-def login_index(request):
+def login_view(request):
     user_current = current_user(request)
     result = request.query.get('result', '')
     result = unquote_plus(result)
@@ -34,11 +35,11 @@ def login(request):
     if user.is_guest():
         return redirect('/user/login/index?result={}'.format(result))
     else:
-        session_id = Session.add(user_id=user.id)
+        session_id = SessionSQL.save(user.id)
         return redirect('/user/login/index?result={}'.format(result), session_id)
 
 
-def register_index(request):
+def register_view(request):
     result = request.query.get('result', '')
     result = unquote_plus(result)
 
@@ -59,7 +60,7 @@ def edit_password(request):
     if user_current.is_admin():
         return html_response('admin_password_edit.html', users=u_all)
     else:
-        return redirect('user/login/index')
+        return redirect('/user/login/index')
 
 
 def update_user_password(request):
@@ -88,10 +89,11 @@ def route_profile(request):
 
 
 def password_index(request):
-    # user = current_user(request)
-    user_id = request.query['id']
-    # user_id = user.id
-    # log('password_user_id', user_id)
+    user = current_user(request)
+    # user_id = request.query['id']
+    # log('password_index', user_id)
+    user_id = str(user.id)
+    log('password_index', user_id)
     # user = User.find_by(id=user_id)
     # log('password_user', user)
     return html_response('forget_password.html', user_id=user_id)
@@ -110,14 +112,16 @@ def password_update(request):
 
 def route_dict():
     d = {
-        '/user/login/index': login_index,
+        '/user/login/index': login_view,
         '/user/login': login,
-        '/user/register/index': register_index,
+        '/user/register/index': register_view,
         '/user/register': register,
         '/edit_password': admin_required(edit_password),
         '/edit_password/update': admin_required(update_user_password),
         '/profile': login_required(route_profile),
-        '/user/password': login_required(password_index),
-        '/user/password/reset': login_required(password_update),
+        # '/user/password': login_required(password_index),
+        '/user/password/index': password_index,
+        # '/user/password/reset': login_required(password_update),
+        '/user/password/reset': password_update,
     }
     return d

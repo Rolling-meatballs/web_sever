@@ -34,13 +34,13 @@ class Request(object):
         if 'Cookie' in self.headers:
             # cookies = self.headers['Cookie'].split('; ')
             cookies = self.headers['Cookie']
-            log('original cookies', cookies)
+            # log('original cookies', cookies)
             k, v = cookies.split('=', 1)
             # for cookie in cookies:
             #     k, v = cookie.split('=')
             #     self.cookies[k] = v
             self.cookies[k] = v
-            log('dict cookies', self.cookies)
+            # log('dict cookies', self.cookies)
 
     def form(self):
         body = urllib.parse.unquote_plus(self.body)

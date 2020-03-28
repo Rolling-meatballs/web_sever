@@ -10,8 +10,8 @@ def log(*args, **kwargs):
     value = time.localtime(int(time.time()))
     formatted = time.strftime(time_format, value)
     print(formatted, *args, **kwargs)
-    with open('log.txt', 'a', encoding='utf-8') as f:
-        print(formatted, *args, file=f, **kwargs)
+    # with open('log.txt', 'a', encoding='utf-8') as f:
+    #     print(formatted, *args, file=f, **kwargs)
 
 
 def random_string():

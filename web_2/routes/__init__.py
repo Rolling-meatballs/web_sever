@@ -6,7 +6,8 @@ from jinja2 import (
     FileSystemLoader,
 )
 
-from models.session import Session
+from models.sessionSQL import SessionSQL
+
 from models.user import User
 from utils import log
 
@@ -42,16 +43,17 @@ def current_user(request):
     if 'session_id' in request.cookies:
         session_id = request.cookies['session_id']
         log('curr_sess:', session_id)
-        s = Session.find_by(session_id=session_id)
+        s = SessionSQL.find_user(session_id)
         if s is None or s.expired():
             return User.guest()
         else:
-            user_id = s.user_id
-            username = User.find_by(id=user_id)
-            if username is None:
-                return User.guest()
-            else:
-                return username
+            return s
+            # user_id = s.user_id
+            # username = User.find_by(id=user_id)
+            # if username is None:
+            #     return User.guest()
+            # else:
+            #     return username
     else:
         return User.guest()
 
@@ -61,7 +63,10 @@ def error(request):
     :return different error request rely on code
     :param request:
     """
-    return b'HTTP/1.1 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>'
+    e = {
+        404: b'HTTP/1.1 404 NOT FOUND\r\n\r\n<h1>NOT FOUND</h1>',
+    }
+    return e.get(code, b'')
 
 
 def formatted_header(headers, code=200):

@@ -45,7 +45,7 @@ def static(request):
     """
     dispose quart data and read picture then give a report
     """
-    log('Hi here is a picture')
+    # log('Hi here is a picture')
     filename = request.query.get('file', 'doge.gif')
     path = 'static/{}'.format(filename)
     with open(path, 'rb') as f:

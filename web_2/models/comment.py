@@ -1,9 +1,11 @@
 from models import Model
+from models.user import User
+from models.base_model import SQLModel
 from utils import log
 # from models.weibo import Weibo
 
 
-class Comment(Model):
+class Comment(SQLModel):
 
     def __init__(self, form, user_id=-1):
         super().__init__(form)
