@@ -1,26 +1,39 @@
-from utils import log
-
-from models import Model
+from models.base_model import SQLModel
 from models.user_role import UserRole
 
 import hashlib
 
+from utils import log
 
-class User(Model):
+
+class User(SQLModel):
+    """
+    User 是一个保存用户数据的 model
+    现在只有两个属性 username 和 password
+    """
+
+    sql_create = '''
+    CREATE TABLE `user` (
+        `id`        INT NOT NULL AUTO_INCREMENT,
+        `username`  VARCHAR(255) NOT NULL,
+        `password`  VARCHAR(255) NOT NULL,
+        `role`      ENUM('guest', 'normal') NOT NULL,
+        PRIMARY KEY (`id`)
+    );
+    '''
+
     def __init__(self, form):
         super().__init__(form)
         self.username = form.get('username', '')
         self.password = form.get('password', '')
-        self.note = form.get('note', '')
         self.role = form.get('role', UserRole.normal)
-        # self.id = form.get('id', None)
 
     @staticmethod
     def guest():
+
         form = dict(
             role=UserRole.guest,
-            username='[guest]',
-            id=-1,
+            username='【游客】',
         )
         u = User(form)
         return u
@@ -28,56 +41,69 @@ class User(Model):
     def is_guest(self):
         return self.role == UserRole.guest
 
-    def is_admin(self):
-        return self.role == UserRole.administer
-
     @staticmethod
-    def salted_password(password, salt='%&*&(*$#$(*&JKHIUKJHF'):
+    def salted_password(password, salt='$!@><?>HUI&DWQa`'):
+        """$!@><?>HUI&DWQa`"""
         salted = password + salt
-        # log('salted', salted)
         hash = hashlib.sha256(salted.encode()).hexdigest()
         return hash
 
     @classmethod
     def login(cls, form):
-        log('login_form', form)
         salted = cls.salted_password(form['password'])
 
-        u = User.find_by(username=form['username'], password=salted)
+        u = User.one(username=form['username'], password=salted)
         if u is not None:
-            result = 'login succeed'
+            result = '登录成功'
             return u, result
         else:
-            result = 'username or password is wrong'
+            result = '用户名或者密码错误'
             return User.guest(), result
 
-    # def validate_login(self):
-        # users = User.all()
-        #
-        # for user in users:
-        #     if self.username == user.username and self.password == user.password:
-        #         return True
-        # return False
-
-        # u = User.find_by(username=self.username, password=self.password)
-        # return u is not None
-
-        # return self.username == 'gua' and self.password == '123'
     @classmethod
     def register(cls, form):
         valid = len(form['username']) > 2 and len(form['password']) > 2
         if valid:
             form['password'] = cls.salted_password(form['password'])
             u = User.new(form)
-            u.save()
-            result = 'register is succeed<br> <pre>{}</pre>'.format(User.all())
+            result = '注册成功'
             return u, result
         else:
-            result = 'length of username and password need longer than two'
+            result = '用户名或者密码长度必须大于2'
             return User.guest(), result
 
     @classmethod
-    def update(cls, u, new_password):
-        password = cls.salted_password(new_password)
-        u.password = password
-        u.save()
+    def one_for_username_and_password(cls, username, password):
+        sql = 'SELECT * FROM {} WHERE username=%s AND password=%s'.format(
+            cls.table_name()
+        )
+
+        log('ORM one_for_username_and_password', sql)
+
+        with cls.connection.cursor() as cursor:
+            cursor.execute(sql, (username, password))
+            result = cursor.fetchone()
+
+        if result is None:
+            return None
+        else:
+            m = cls(result)
+        return m
+
+    @classmethod
+    def one_for_id(cls, id):
+        sql = 'SELECT * FROM {} WHERE id=%s'.format(
+            cls.table_name()
+        )
+
+        log('ORM one_for_id', sql)
+
+        with cls.connection.cursor() as cursor:
+            cursor.execute(sql, (id,))
+            result = cursor.fetchone()
+
+        if result is None:
+            return None
+        else:
+            m = cls(result)
+        return m

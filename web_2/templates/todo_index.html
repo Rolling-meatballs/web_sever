@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>TODO program</title>
+    <title>TODO 程序</title>
 </head>
 <body>
     <h1>TODO</h1>
@@ -10,19 +10,13 @@
         <input type="text" name="title" placeholder="请输入todo">
         <br>
         <button type="submit">添加</button>
-        <br>
-        <a href="/user/login/index">Login</a>
     </form>
-    <div>
-        {% for todo in todos %}
-        <h3>
-            {{ todo.id }} : {{ todo.title }}
-            <a href="/todo/edit?id={{ todo.id }}">edit</a>
-            <a href="/todo/delete?id={{ todo.id }}">delete</a>
-            <br>
-            creation:{{ todo.created_time }}, update:{{ todo.updated_time}}
-        </h3>
-        {% endfor %}
-    </div>
+    {% for t in todos %}
+    <h3>
+        {{ t.id }} : {{ t.title }}
+        <a href="/todo/edit?id={{ t.id }}">编辑</a>
+        <a href="/todo/delete?id={{ t.id }}">删除</a>
+    </h3>
+    {% endfor %}
 </body>
 </html>

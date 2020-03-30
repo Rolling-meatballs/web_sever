@@ -25,7 +25,7 @@
         <!-- action 属性是 path -->
         <!-- method 属性是 HTTP方法 一般是 get 或者 post -->
         <!-- get post 的区别上课会讲 -->
-        <form action="/messages" method="post">
+        <form action="/messages/add/post" method="post">
             <!-- textarea 是一个文本域 -->
             <!-- name rows cols 都是属性, 用处上课讲 -->
             <input name="message">
@@ -34,7 +34,7 @@
             <!-- button type=submit 才可以提交表单 -->
             <button type="submit">POST 提交</button>
         </form>
-        <form action="/messages" method="get">
+        <form action="/messages/add/get" method="get">
             <input name="message">
             <br>
             <input name="author">
@@ -42,11 +42,9 @@
         </form>
         <div>
             {% for message in messages %}
-                Message id :({{ message.id }})
-                author: ({{ message.author }})
-                message: ({{ message.message }})
-                <br>
+                <div>{{ message }}</div>
             {% endfor %}
+            
         </div>
     </body>
 </html>

@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Weibo edit</title>
+    <title>修改 weibo 的页面</title>
 </head>
 <body>
-    <h1>Weibo edit</h1>
+    <h1>修改 todo</h1>
     <form action="/weibo/update" method="post">
-        <input hidden="hidden" name="id" placeholder="id" value="{{ weibo.id }}">
+        <input hidden="hidden" name="id" placeholder="id" value="{{ weibo.id }}"></input>
         <br>
-        <input name="content" placeholder="content" value="{{ weibo.content }}">
+        <input name="content" placeholder="content" value="{{ weibo.content }}"></input>
         <br>
-        <button type="submit">submit</button>
+        <button>提交修改</button>
     </form>
 </body>
 </html>

@@ -1,44 +1,62 @@
-from urllib.parse import (
-    unquote_plus,
-    quote,
-)
+from urllib.parse import unquote_plus, quote
 
 from models.session import Session
-from models.sessionSQL import SessionSQL
-from models.user import User
 from routes import (
     current_user,
     html_response,
-    redirect,
-    login_required,
-    admin_required,
+    redirect
 )
 
-from utils import (
-    log,
-    random_string,
-)
+from utils import log
+from models.user import User
 
 
-def login_view(request):
-    user_current = current_user(request)
-    result = request.query.get('result', '')
-    result = unquote_plus(result)
-    return html_response('login.html', result=result, username=user_current.username)
+# 不要这么 import
+# from xx import a, b, c, d, e, f
 
 
 def login(request):
-    log('test_login')
+    """
+    登录页面的路由函数
+    """
+    log('login, headers', request.headers)
+    log('login, cookies', request.cookies)
+    user_current = current_user(request)
+    log('current user', user_current)
     form = request.form()
-    log('login_routes_form', form)
     user, result = User.login(form)
     if user.is_guest():
-        return redirect('/user/login/index?result={}'.format(result))
+        return redirect('/user/login/view?result={}'.format(result))
     else:
-        session_id = SessionSQL.save(user.id)
-        return redirect('/user/login/index?result={}'.format(result), session_id)
+        session_id = Session.add(user_id=user.id)
+        return redirect('/user/login/view?result={}'.format(result), session_id)
 
 
+def login_view(request):
+    u = current_user(request)
+    result = request.query.get('result', '')
+    result = unquote_plus(result)
+
+    return html_response(
+        'login.html',
+        username=u.username,
+        result=result,
+    )
+
+
+def register(request):
+    """
+    注册页面的路由函数
+    """
+    form = request.form()
+
+    u, result = User.register(form)
+    log('register post', result)
+
+    return redirect('/user/register/view?result={}'.format(quote(result)))
+
+
+# @route('/register', 'GET')
 def register_view(request):
     result = request.query.get('result', '')
     result = unquote_plus(result)
@@ -46,82 +64,31 @@ def register_view(request):
     return html_response('register.html', result=result)
 
 
-def register(request):
-    form = request.form()
-    u, result = User.register(form)
+# RESTFul
+# GET /login login_get
+# POST /login login_post
+# UPDATE /user login_update
+# DELETE /user login_delete
+#
+# GET /login
+# POST /login/view
+# POST /user/update
+# GET /user/delete
 
-    return redirect('/user/register/index?result={}'.format(quote(result)))
-
-
-def edit_password(request):
-    user_current = current_user(request)
-    u_all = User.all()
-    log('user_u_all:', u_all)
-    if user_current.is_admin():
-        return html_response('admin_password_edit.html', users=u_all)
-    else:
-        return redirect('/user/login/index')
-
-
-def update_user_password(request):
-    """
-    changing user's password
-    :param request:
-    :return:
-    """
-    form = request.form()
-    log('admin update', form, form['username'], type(form['username']))
-    username = form['username']
-    new_password = User.salted_password(form['password'])
-    log('admin_update_info:', username, new_password)
-    u = User.find_by(username=username)
-    log('admin_u:', u)
-    if u is not None:
-        User.update(u, new_password)
-    return redirect('/edit_password')
-
-
-def route_profile(request):
-    user = current_user(request)
-    information = User.find_by(username=user.username)
-    # information = json.dump(information, indent=2, ensure_ascii=False)
-    return html_response('profile.html', information=information)
-
-
-def password_index(request):
-    user = current_user(request)
-    # user_id = request.query['id']
-    # log('password_index', user_id)
-    user_id = str(user.id)
-    log('password_index', user_id)
-    # user = User.find_by(id=user_id)
-    # log('password_user', user)
-    return html_response('forget_password.html', user_id=user_id)
-    # return html_response('forget_password.html', username=user.username)
-
-
-def password_update(request):
-    # user = current_user(request)
-    user_id = int(request.query['id'])
-    user = User.find_by(id=user_id)
-    new_password = form.new_password
-    User.update(user, new_password)
-    # return redirect('/user/password')
-    return redirect('/user/password?id={}'.format(user_id))
+# user_get()
+# user_post()
+# def user:
+#     if method == 'GET':
+#         return user_get()
+#     else:
+#         return user_post()
 
 
 def route_dict():
-    d = {
-        '/user/login/index': login_view,
+    r = {
         '/user/login': login,
-        '/user/register/index': register_view,
+        '/user/login/view': login_view,
         '/user/register': register,
-        '/edit_password': admin_required(edit_password),
-        '/edit_password/update': admin_required(update_user_password),
-        '/profile': login_required(route_profile),
-        # '/user/password': login_required(password_index),
-        '/user/password/index': password_index,
-        # '/user/password/reset': login_required(password_update),
-        '/user/password/reset': password_update,
+        '/user/register/view': register_view,
     }
-    return d
+    return r

@@ -1,42 +1,32 @@
 from models.todo import Todo
-
 from routes import (
     redirect,
     current_user,
-    login_required,
-    GuaTemplate,
     html_response,
+    login_required,
 )
-
 from utils import log
-import time
 
 
 def index(request):
     """
-    todo index
-    :param request:
-    :return:
+    todo 首页的路由函数
     """
     u = current_user(request)
     todos = Todo.find_all(user_id=u.id)
+    # 替换模板文件中的标记字符串
     return html_response('todo_index.html', todos=todos)
 
 
 def add(request):
     """
-    add new todo
-    :param request:
-    :return:
+    用于增加新 todo 的路由函数
     """
-    form = request.form()
     u = current_user(request)
-
+    form = request.form()
     Todo.add(form, u.id)
-    # created_time = Todo.the_time()
-    # log('now', created_time)
-    # Client retouches the index after update data
-    # Client can show new data after give a new request
+    # 浏览器发送数据过来被处理后, 重定向到首页
+    # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/todo/index')
 
 
@@ -47,35 +37,27 @@ def delete(request):
 
 
 def edit(request):
-    """
-    for todo index
-    :param request:
-    :return:
-    """
-    # replace tag strings in template files
     todo_id = int(request.query['id'])
     t = Todo.find_by(id=todo_id)
-    # body = template('todo_edit.html')
-    # body = body.replace('{{todo_id}}', str(todo_id))
-    # body = body.replace('{{todo_title}}', str(t.title))
-
     return html_response('todo_edit.html', todo=t)
 
 
 def update(request):
     """
-    update new todo data
-    :param request:
-    :return:
+    用于增加新 todo 的路由函数
     """
     form = request.form()
-    log('todo update', form, form['id'], type(form['id']))
     Todo.update(form)
-
+    # 浏览器发送数据过来被处理后, 重定向到首页
+    # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/todo/index')
 
 
 def same_user_required(route_function):
+    """
+    这个函数看起来非常绕，所以你不懂也没关系
+    就直接拿来复制粘贴就好了
+    """
 
     def f(request):
         log('same_user_required')
@@ -95,12 +77,16 @@ def same_user_required(route_function):
 
 
 def route_dict():
-
+    """
+    路由字典
+    key 是路由(路由就是 path)
+    value 是路由处理函数(就是响应)
+    """
     d = {
-        '/todo/index': index,
         '/todo/add': login_required(add),
         '/todo/delete': login_required(same_user_required(delete)),
         '/todo/edit': login_required(same_user_required(edit)),
         '/todo/update': login_required(same_user_required(update)),
+        '/todo/index': login_required(index),
     }
     return d

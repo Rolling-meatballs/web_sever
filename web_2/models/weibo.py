@@ -1,30 +1,31 @@
 from models import Model
 from models.comment import Comment
-from utils import log
+from models.base_model import SQLModel
 
 
-class Weibo(Model):
-
+class Weibo(SQLModel):
+    """
+    微博类
+    """
     def __init__(self, form):
         super().__init__(form)
         self.content = form.get('content', '')
+        # 和别的数据关联的方式, 用 user_id 表明拥有它的 user 实例
         self.user_id = form.get('user_id', None)
-        # self.weibo_id = form.get('weibo_id', -1)
+
+    @classmethod
+    def add(cls, form, user_id):
+        w = Weibo(form)
+        w.user_id = user_id
+        w.new(w)
 
     @classmethod
     def update(cls, form):
         weibo_id = int(form['id'])
-        data = Weibo.find_by(id=weibo_id)
-        data.title = form['content']
-        data.save()
-
-    @classmethod
-    def add(cls, form, user_id):
-        log('add_form', form)
-        data = Weibo(form)
-        data.user_id = user_id
-        data.save()
+        w = Weibo.one(id=weibo_id)
+        w.title = form['content']
+        w.save()
 
     def comments(self):
-        cs = Comment.find_all(weibo_id=self.id)
+        cs = Comment.all(weibo_id=self.id)
         return cs

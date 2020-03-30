@@ -1,5 +1,5 @@
 import json
-from enum import(
+from enum import (
     Enum,
     auto,
 )
@@ -8,25 +8,19 @@ from enum import(
 class UserRole(Enum):
     guest = auto()
     normal = auto()
-    administer = auto()
-    # enum UserRole:
-    #      guest
-    #      normal
 
+    def translate(self, _escape_table):
+        return self.name
 
 class GuaEncoder(json.JSONEncoder):
-    #"role":{
-    #       "__enum__": "normal"
-    #    }
     prefix = "__enum__"
 
     def default(self, o):
         if isinstance(o, UserRole):
-            # self.__class__.prefix
-            # self.prefix
             return {self.prefix: o.name}
         else:
-            return super().default(self, o)
+            return super().default(o)
+
 
 def gua_decode(d):
     if GuaEncoder.prefix in d:

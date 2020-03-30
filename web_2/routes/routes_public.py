@@ -1,86 +1,39 @@
-from utils import (
-    log,
-    random_string,
-)
-
-from models.message import Message
-from models.user import User
 from routes import (
     current_user,
     html_response,
-    redirect,
-    login_required,
-    admin_required,
+    redirect
 )
+from utils import log
 
 
 def index(request):
+    """
+    主页的处理函数, 返回主页的响应
+    """
     u = current_user(request)
     return html_response('index.html', username=u.username)
 
 
-def message_index(request):
-    message = Message.all()
-    # log('message_result', result)
-    return html_response('messages.html', messages=message)
-
-
-def message_add_get(request):
-    log('the method', request.method)
-    data = request.query
-    Message.new(data)
-    log('get', data)
-
-    return redirect('/messages/index')
-
-
-def message_add_post(request):
-    data = request.form()
-    Message.new(data)
-    log('post', data)
-    return redirect('/messages/index')
-
-
 def static(request):
     """
-    dispose quart data and read picture then give a report
+    静态资源的处理函数, 读取图片并生成响应返回
     """
-    # log('Hi here is a picture')
     filename = request.query.get('file', 'doge.gif')
-    path = 'static/{}'.format(filename)
+    path = 'static/' + filename
     with open(path, 'rb') as f:
-        header = b'HTTP/1.1 200 OK\r\nContent-Type: image/gif\r\n'
-        r = header + b'\r\n' + f.read()
-        return r
-
-
-def route_admin(request):
-    # admin page
-    users = User.all()
-    return html_response('users.html', users=users)
-
-
-def route_admin_update(request):
-    form = request.form()
-    user_id = int(form['id'])
-    new_password = form['password']
-    t = User.find_by(id=user_id)
-    t.password = new_password
-    t.save()
-
-    return redirect('/admin/user')
+        header = b'HTTP/1.x 200 OK\r\nContent-Type: image/gif\r\n\r\n'
+        img = header + f.read()
+        return img
 
 
 def route_dict():
-    # log('Hi here is route')
-    r = {
+    """
+    路由字典
+    key 是路由(路由就是 path)
+    value 是路由处理函数(就是响应)
+    """
+    d = {
         '/': index,
         '/static': static,
-        '/message/index': message_index,
-        '/message/get': message_add_get,
-        '/message/post': message_add_post,
-        '/admin/user': admin_required(route_admin),
-        '/admin/user/update': admin_required(route_admin_update),
     }
-
-    return r
+    return d

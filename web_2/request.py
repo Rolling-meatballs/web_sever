@@ -2,45 +2,39 @@ import urllib.parse
 from utils import log
 
 
-# define a Class for restoring request data
+# 定义一个 class 用于保存请求的数据
 class Request(object):
     def __init__(self, raw_data):
+        # 只能 split 一次，因为 body 中可能有换行
         header, self.body = raw_data.split('\r\n\r\n', 1)
         h = header.split('\r\n')
 
         parts = h[0].split()
         self.method = parts[0]
         path = parts[1]
-        self.path = ''
+        self.path = ""
         self.query = {}
         self.parse_path(path)
-        log('path and query', self.path, self.query)
+        log('Request: path 和 query', self.path, self.query)
 
         self.headers = {}
         self.cookies = {}
         self.add_headers(h[1:])
-        # put the body into request
-
-        # log('heads', h)
-        # self.heads = parts[1:]
+        log('Request: headers 和 cookies', self.headers, self.cookies)
 
     def add_headers(self, header):
-
+        """
+        Cookie: user=gua
+        """
         lines = header
         for line in lines:
             k, v = line.split(': ', 1)
             self.headers[k] = v
 
         if 'Cookie' in self.headers:
-            # cookies = self.headers['Cookie'].split('; ')
             cookies = self.headers['Cookie']
-            # log('original cookies', cookies)
-            k, v = cookies.split('=', 1)
-            # for cookie in cookies:
-            #     k, v = cookie.split('=')
-            #     self.cookies[k] = v
+            k, v = cookies.split('=')
             self.cookies[k] = v
-            # log('dict cookies', self.cookies)
 
     def form(self):
         body = urllib.parse.unquote_plus(self.body)
@@ -48,14 +42,22 @@ class Request(object):
         log('form', body)
         args = body.split('&')
         f = {}
-        log('arg', args)
+        log('args', args)
         for arg in args:
             k, v = arg.split('=')
             f[k] = v
-        log('form() dictionary', f)
+        log('form() 字典', f)
         return f
 
     def parse_path(self, path):
+        """
+        输入: /gua?message=hello&author=gua
+        返回
+        (gua, {
+            'message': 'hello',
+            'author': 'gua',
+        })
+        """
         index = path.find('?')
         if index == -1:
             self.path = path
