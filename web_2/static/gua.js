@@ -10,7 +10,7 @@ var ajax = function (method, path, data, responseCallback) {
     // setting request way and address
     r.open(method, path, true)
     // setting form of sending
-    r.setRequestHeade('Content-Type', 'application/json')
+    r.setRequestHeader('Content-Type', 'application/json')
     // register response function
     r.onreadystatechange = function () {
         if(r.readyState === 4) {

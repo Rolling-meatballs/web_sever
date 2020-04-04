@@ -3,7 +3,7 @@ from time import time
 from models.base_model import  SQLModel
 
 
-class TodoAdjax(SQLModel):
+class TodoAjax(SQLModel):
     sql_create = '''
         CREATE TABLE `todoajax` (
             `id`        INT NOT NULL AUTO_INCREMENT,

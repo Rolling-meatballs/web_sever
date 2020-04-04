@@ -1,4 +1,4 @@
-from models.todo_ajax import TodoAdjax
+from models.todo_ajax import TodoAjax
 from routes import (
     redirect,
     current_user,
@@ -16,7 +16,7 @@ def index(request):
 
 
 def all(request):
-    todos = TodoAdjax.all()
+    todos = TodoAjax.all()
     todos = [t.__dict__ for t in todos]
     return json_response(todos)
 
@@ -25,7 +25,7 @@ def add(request):
     u = current_user(request)
     form = request.json()
     log('ajax todo add', form, u)
-    t = TodoAdjax.add(form, u.id)
+    t = TodoAjax.add(form, u.id)
     message = dict(message='{} added succeed'.format(t.title))
     return json_response(message)
 

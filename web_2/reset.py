@@ -7,7 +7,7 @@ from models.test_model import Test
 from models.session import Session
 from models.user_role import UserRole
 from models.user import User
-# from models.weibo import Weibo
+from models.todo_ajax import TodoAjax
 # from models.comment import Comment
 from models.weibo import Weibo
 from models.comment import Comment
@@ -18,8 +18,9 @@ def recreate_table(cursor):
     cursor.execute(Test.sql_create)
     cursor.execute(User.sql_create)
     cursor.execute(Session.sql_create)
-    cursor.execute(Weibo.sql_create)
-    cursor.execute(Comment.sql_create)
+    cursor.execute(TodoAjax.sql_create)
+    # cursor.execute(Weibo.sql_create)
+    # cursor.execute(Comment.sql_create)
 
 
 def recreate_database():
@@ -67,7 +68,7 @@ def test_all():
 
 
 
-def test_data():
+def fake_data():
     SQLModel.init_db()
 
     Test.new({})
@@ -80,6 +81,11 @@ def test_data():
     u, result = User.register(form)
 
     Session.add(u.id)
+
+    form = dict(
+        title='test todo ajax',
+    )
+    t = TodoAjax.add(form, u.id)
 
     # form = dict(
     #     content='test weibo',
@@ -97,6 +103,6 @@ def test_data():
 
 if __name__ == '__main__':
     # recreate_database()
-    # test_data()
+    fake_data()
     # test_one()
-    test_all()
+    # test_all()
