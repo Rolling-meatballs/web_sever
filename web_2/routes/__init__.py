@@ -1,3 +1,4 @@
+import json
 import os.path
 from urllib.parse import quote
 
@@ -118,6 +119,16 @@ def html_response(filename, **kwargs):
     }
     header = formatted_header(headers)
     r = header + '\r\n' + body
+    return r.encode()
+
+
+def json_response(data):
+    body = json.dumps(data, indent=2, ensure_ascii=False)
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    headers = formatted_header(headers)
+    r = headers + '\r\n' + body
     return r.encode()
 
 
