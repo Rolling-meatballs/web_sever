@@ -53,16 +53,16 @@ def recreate_database():
 
 def test_one():
     User.init_db()
-    User.one(username='ddd', )
-    User.one( password='1234', )
-    User.one(username='ddd', password='1234', )
+    User.one(username='gua', )
+    User.one( password='123', )
+    User.one(username='gua', password='123', )
 
 
 def test_all():
     User.init_db()
     User.all()
-    User.all(username='ddd', )
-    User.all( password='1234', )
+    User.all(username='gua', )
+    User.all( password='123', )
     # User.all(username='ddd', password='1234', )
 
 
@@ -103,6 +103,6 @@ def fake_data():
 
 if __name__ == '__main__':
     # recreate_database()
-    fake_data()
-    # test_one()
+    # fake_data()
+    test_one()
     # test_all()

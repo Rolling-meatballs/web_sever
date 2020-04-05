@@ -125,7 +125,7 @@ class SQLModel(object):
         log('values2:', values)
 
         with cls.connection.cursor() as cursor:
-            s = cursor.execute(sql, (values,))
+            s = cursor.execute(sql, values)
             log('one_test:',s)
             result = cursor.fetchone()
             log('result',result)
