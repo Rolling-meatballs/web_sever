@@ -58,6 +58,18 @@ class User(SQLModel):
             return u, result
         else:
             result = '用户名或者密码错误'
+            return User.guest(), result    \
+
+    @classmethod
+    def login_ajax(cls, form):
+        salted = cls.salted_password(form['password'])
+
+        u = User.one(username=form['username'], password=salted)
+        if u is not None:
+            result = '登录成功'
+            return u, result
+        else:
+            result = '用户名或者密码错误'
             return User.guest(), result
 
     @classmethod
