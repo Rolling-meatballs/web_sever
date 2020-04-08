@@ -1,38 +1,60 @@
+from flask import (
+    request,
+    redirect,
+    Blueprint,
+    render_template,
+    url_for,
+)
+
 from models.comment import Comment
 from models.user import User
 from models.weibo import Weibo
 from routes import (
-    redirect,
     current_user,
-    html_response,
     login_required,
 )
 from utils import log
 
 
-def index(request):
+bp = Blueprint('weibo', __name__)
+
+
+@bp.route('/weibo/index')
+@login_required
+def index():
     """
     weibo 首页的路由函数
     """
-    u = current_user(request)
+    # u = current_user()
+    # weibos = Weibo.all(user_id=u.id)
+    # # 替换模板文件中的标记字符串
+    # return html_response('weibo_index.html', weibos=weibos, user=u)
+    if 'id' in request.args:
+        user_id = int(request.args['id'])
+        u = User.one(id=user_id)
+    else:
+        u = current_user()
+
     weibos = Weibo.all(user_id=u.id)
-    # 替换模板文件中的标记字符串
-    return html_response('weibo_index.html', weibos=weibos, user=u)
+    return render_template('weibo_index.html', weibos=weibos, user=u)
 
 
-def add(request):
+@bp.route('/weibo/add', methods=['POST'])
+@login_required
+def add():
     """
     用于增加新 weibo 的路由函数
     """
-    u = current_user(request)
-    form = request.form()
+    u = current_user()
+    form = request.form
     Weibo.add(form, u.id)
     # 浏览器发送数据过来被处理后, 重定向到首页
     # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/weibo/index')
 
 
-def delete(request):
+@bp.route('/weibo/delete')
+def delete():
     weibo_id = int(request.query['id'])
     Weibo.delete(weibo_id)
     # 注意删除所有微博对应评论
@@ -42,65 +64,78 @@ def delete(request):
     return redirect('/weibo/index')
 
 
-def edit(request):
+@bp.route('/weibo/edit')
+def edit():
     weibo_id = int(request.query['id'])
     w = Weibo.one(id=weibo_id)
-    return html_response('weibo_edit.html', weibo=w)
+    return render_template('weibo_edit.html', weibo=w)
 
 
-def update(request):
+@bp.route('/weibo/update', methods=['POST'])
+def update():
     """
     用于增加新 weibo 的路由函数
     """
-    form = request.form()
-    Weibo.update(form)
+    form = request.form
+    Weibo.update(**form)
     # 浏览器发送数据过来被处理后, 重定向到首页
     # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/weibo/index')
 
 
-def comment_add(request):
-    u = current_user(request)
-    form = request.form()
-    weibo_id = int(form['weibo_id'])
-
-    c = Comment(form)
-    c.user_id = u.id
-    c.weibo_id = weibo_id
-    c.new(c)
-
-    log('comment add', c, u, form)
+@bp.route('/comment/add', methods=['POST'])
+@login_required
+def comment_add():
+    u = current_user()
+    form = request.form
+    Weibo.comments_add(form, u.id)
     return redirect('/weibo/index')
 
+@bp.route('/comment/delete')
+def comment_delete():
+    comment_id = int(request.args['id'])
+    Comment.delete(comment_id)
+    return redirect('/weibo/index')
+
+@bp.route('/comment/edit')
 def comment_edit(request):
     comment_id = int(request.query['id'])
     t = Comment.one(id=comment_id)
-    return html_response('comment_edit.html', comment=t)
+    return render_template('comment_edit.html', comment=t)
 
-def comment_update(request):
+@bp.route('/comment/update', methods=['POST'])
+def comment_update():
     """
         用于增加新 weibo 的路由函数
         """
-    form = request.form()
-    Comment.update(form)
+    form = request.form
+    Comment.update(**form)
     # 浏览器发送数据过来被处理后, 重定向到首页
     # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/weibo/index')
 
-def comment_delete(request):
-    u = current_user(request)
-    nuser_id = int(u.id)
-    # log('gaicuoti:', user_id)
+def comment_owner_required(route_function):
+    """
+    这个函数看起来非常绕，所以你不懂也没关系
+    就直接拿来复制粘贴就好了
+    """
 
-    comment_id = int(request.query['id'])
-    comments = Comment.one(id=comment_id)
-    weibo_id = comments.weibo_id
-    user_id = comments.user_id
-    log('gaicuoti:', weibo_id, user_id)
+    def f():
+        log('comment_owner_required')
+        u = current_user()
+        if 'id' in request.args:
+            comment_id = request.args['id']
+        else:
+            comment_id = request.args['id']
+        c = Comment.one(id=int(comment_id))
 
-    if nuser_id == user_id or nuser_id == weibo_id:
-        Comment.delete(comment_id)
-    return redirect('/weibo/index')
+        if c.user_id == u.id:
+            return route_function()
+        else:
+            return redirect(url_for('weibo.index'))
+
+    return f
+
 
 def weibo_owner_required(route_function):
     """
@@ -108,19 +143,38 @@ def weibo_owner_required(route_function):
     就直接拿来复制粘贴就好了
     """
 
-    def f(request):
+    def f():
         log('weibo_owner_required')
-        u = current_user(request)
-        if 'id' in request.query:
-            weibo_id = request.query['id']
+        u = current_user()
+        if 'id' in request.args:
+            weibo_id = request.args['id']
         else:
-            weibo_id = request.form()['id']
+            weibo_id = request.args['id']
         w = Weibo.one(id=int(weibo_id))
 
         if w.user_id == u.id:
-            return route_function(request)
+            return route_function()
         else:
-            return redirect('/weibo/index')
+            return redirect(url_for('weibo.index'))
+
+    return f
+
+def comment_owner_or_weibo_owner_required(route_function):
+
+    def f():
+        log('comment_owner_or_weibo_owner_reuired')
+        u = current_user()
+        if 'id' in request.args:
+            comment_id = request.args['id']
+        else:
+            comment_id = request.args['id']
+        c = Comment.one(id=int(comment_id))
+        w = Weibo.one(id=c.weibo_id)
+
+        if u.id == c.user_id or u.id == w.user_id:
+            return route_function()
+        else:
+            return redirect(url_for('user.login_view'))
 
     return f
 
@@ -139,5 +193,9 @@ def route_dict():
         '/weibo/index': login_required(index),
         # 评论功能
         '/comment/add': login_required(comment_add),
+        '/comment/delete': login_required(comment_owner_or_weibo_owner_required(comment_delete)),
+        '/comment/edit': login_required(comment_owner_required(comment_edit)),
+        # '/comment/edit': login_required(comment_edit),
+        '/comment/update': login_required(comment_owner_required(comment_update)),
     }
     return d

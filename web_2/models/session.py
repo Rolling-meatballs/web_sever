@@ -43,7 +43,7 @@ class Session(SQLModel):
             session_id=session_id,
             user_id=user_id,
         )
-        s = Session.new(form)
+        Session.new(form)
         return session_id
 
     @classmethod

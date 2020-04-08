@@ -108,78 +108,60 @@ class SQLModel(object):
 
     @classmethod
     def one(cls, **kwargs):
-        log('kwargs',kwargs)
-        sql_set = 'AND '.join(
-            ['`{}`= % s '.format(k) for k in kwargs.keys()]
+        # User.one(username=request.args['username'])
+        # SELECT * FROM
+        # 	`User`
+        # WHERE
+        # 	username='gua'
+        # LIMIT 1
+        sql_select = 'SELECT * FROM \n' \
+                     '\t{} \n' \
+                     '{}\n' \
+                     'LIMIT 1'
+        sql_where = ' AND '.join(
+            ['`{}`=%s'.format(k) for k in kwargs.keys()]
         )
-        sql = 'SELECT * FROM {} WHERE {}'.format(
+        sql_where = '\nWHERE\n\t{}'.format(sql_where)
+        sql_select = sql_select.format(
             cls.table_name(),
-            sql_set,
+            sql_where,
         )
 
-        log('spl', sql)
+        log('ORM one <{}>'.format(sql_select.replace('\n', ' ')))
 
-        values = list(kwargs.values())
-        log('values:',values)
-        values = tuple(values)
-        log('values2:', values)
+        values = tuple(kwargs.values())
 
         with cls.connection.cursor() as cursor:
-            s = cursor.execute(sql, values)
-            log('one_test:',s)
+            cursor.execute(sql_select, values)
             result = cursor.fetchone()
-            log('result',result)
-        # cls.connection.commit()
+            if result is None:
+                return None
+            else:
+                return cls(result)
 
-        if result is None:
-            return None
-        else:
-            m = cls(result)
-        return m
 
     @classmethod
     def all(cls, **kwargs):
-        log('kwargs',kwargs)
-        sql_set = 'AND '.join(
-            ['`{}`= % s '.format(k) for k in kwargs.keys()]
-        )
+        sql_select = 'SELECT * FROM \n\t{}'.format(cls.table_name())
+
         if len(kwargs) > 0:
-            sql = 'SELECT * FROM {} WHERE {}'.format(
-                cls.table_name(),
-                sql_set,
+            sql_where = ' AND '.join(
+                ['`{}`=%s'.format(k) for k in kwargs.keys()]
             )
+            sql_where = '\nWHERE\n\t{}'.format(sql_where)
+            sql_select = '{}{}'.format(sql_select, sql_where)
+        log('ORM all <{}>'.format(sql_select.replace('\n', ' ')))
 
-            log('spl', sql)
+        values = tuple(kwargs.values())
 
-            values = list(kwargs.values())
-            log('values:',values)
-            values = tuple(values)
-            log('values2:', values)
-
-            with cls.connection.cursor() as cursor:
-                s = cursor.execute(sql, (values,))
-                log('all_test:',s)
-                result = cursor.fetchall()
-                log('result',result)
-            # cls.connection.commit()
-        else:
-            sql = 'SELECT * FROM {}'.format(
-                cls.table_name(),
-            )
-            with cls.connection.cursor() as cursor:
-                s = cursor.execute(sql)
-                log('all_test:',s)
-                result = cursor.fetchall()
-                log('result',result)
-        if result is None:
-            return None
-        else:
-            ms = []
-            for m in result:
-                ms.append(cls(m))
-                log('ms',ms)
-        return ms
-
+        ms = []
+        with cls.connection.cursor() as cursor:
+            cursor.execute(sql_select, values)
+            result = cursor.fetchall()
+            for row in result:
+                m = cls(row)
+                ms.append(m)
+            return ms
 
     def __repr__(self):
         """
