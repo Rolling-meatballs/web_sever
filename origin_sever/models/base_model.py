@@ -51,7 +51,7 @@ class SQLModel(object):
         # )
         sql_keys = ', '.join(['`{}`'.format(k) for k in form.keys()])
         sql_values = ', '.join(['%s'] * len(form))
-        sql_insert = 'INSERT INTO {} ({}) VALUES ({})'.format(
+        sql_insert = 'INSERT NTO {} ({}) VALUES ({})'.format(
             cls.table_name(),
             sql_keys,
             sql_values,

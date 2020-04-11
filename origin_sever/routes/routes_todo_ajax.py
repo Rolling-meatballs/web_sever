@@ -1,9 +1,7 @@
 from models.todo_ajax import TodoAjax
-from routes import (
-    redirect,
+from web_framework import (
     current_user,
     html_response,
-    login_required,
     json_response,
 )
 from utils import log

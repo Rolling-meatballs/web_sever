@@ -12,9 +12,22 @@ from models.user import User
 from utils import log
 
 
+url_map = {}
+
+
+def response_for_path(request):
+    """
+    根据 path 调用相应的处理函数
+    没有处理的 path 会返回 404
+    """
+    # 注册外部的路由
+    response = url_map.get(request.path, error)
+    log('request', request, response)
+    return response(request)
+
 
 def initialized_environment():
-    parent = os.path.dirname(os.path.dirname(__file__))
+    parent = os.path.dirname(__file__)
     path = os.path.join(parent, 'templates')
     # 创建一个加载器, jinja2 会从这个目录中加载模板
     loader = FileSystemLoader(path)

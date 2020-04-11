@@ -1,35 +1,12 @@
+import importlib
 import socket
 import _thread
+import sys
 
 from request import Request
 from utils import log
 
 from models.base_model import SQLModel
-
-from routes import error
-
-from routes.routes_todo import route_dict as todo_routes
-from routes.routes_weibo import route_dict as weibo_routes
-from routes.routes_user import route_dict as user_routes
-from routes.routes_public import route_dict as public_routes
-from routes.routes_todo_ajax import route_dict as todo_ajax_routes
-
-
-def response_for_path(request):
-    """
-    根据 path 调用相应的处理函数
-    没有处理的 path 会返回 404
-    """
-    r = {}
-    # 注册外部的路由
-    r.update(todo_routes())
-    r.update(weibo_routes())
-    r.update(user_routes())
-    r.update(public_routes())
-    r.update(todo_ajax_routes())
-    response = r.get(request.path, error)
-    log('request', request, response)
-    return response(request)
 
 
 def request_from_connection(connection):
@@ -80,9 +57,14 @@ def run(host, port):
 
 
 if __name__ == '__main__':
+    log('wsgi file', sys.argv[1])
+    filename = sys.argv[1]
+    module = importlib.import_module(filename)
+    log('module', module.application)
     # 生成配置并且运行程序
     config = dict(
         host='127.0.0.1',
         port=3000,
+        application=module.application
     )
     run(**config)

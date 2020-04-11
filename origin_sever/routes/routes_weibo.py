@@ -1,7 +1,6 @@
 from models.comment import Comment
-from models.user import User
 from models.weibo import Weibo
-from routes import (
+from web_framework import (
     redirect,
     current_user,
     html_response,

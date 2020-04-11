@@ -1,9 +1,7 @@
-from routes import (
+from web_framework import (
     current_user,
-    html_response,
-    redirect
+    html_response
 )
-from utils import log
 
 
 def index(request):

@@ -1,7 +1,7 @@
 from urllib.parse import unquote_plus, quote
 
 from models.session import Session
-from routes import (
+from web_framework import (
     current_user,
     html_response,
     redirect
