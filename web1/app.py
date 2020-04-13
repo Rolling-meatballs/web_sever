@@ -16,30 +16,40 @@ from routes.routes_public import bp as public_bp
 from routes.routes_user import bp as user_bp
 from routes.routes_weibo import bp as weibo_bp
 
-app = Flask(__name__)
-app.register_blueprint(public_bp)
-app.register_blueprint(user_bp)
-app.register_blueprint(weibo_bp)
 
-@app.errorhandler(404)
+
+
+
 def error_view(error):
     return 'self_set 404'
 
-@app.context_processor
+
 def current_time():
     time_format = '%Y%m%d %H:%M:%S'
     localtime = time.localtime(int(time.time()))
     formatted = time.strftime(time_format, localtime)
     return dict(current_time=formatted)
 
+
+def configured_app():
+    app = Flask(__name__)
+    # app.register_blueprint(public_bp)
+    # app.register_blueprint(user_bp)
+    # app.register_blueprint(weibo_bp)
+    SQLModel.init_db()
+
+    app.errorhandler(404)(error_view)
+    app.template_filter('formatted_time')(current_time)
+    app.context_processor(current_time)
+
 if __name__ == '__main__':
     SQLModel.init_db()
     config = dict(
         debug=True,
-        host='127.0.0.1',
-        port=3000,
+        host='localhost',
+        port=80,
     )
-    app.secret_key = secret_key
+    app = configured_app()
     log('url_map', app.url_map)
     app.run(**config)
 
