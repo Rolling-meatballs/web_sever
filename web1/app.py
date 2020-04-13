@@ -39,7 +39,7 @@ def configured_app():
     SQLModel.init_db()
 
     app.errorhandler(404)(error_view)
-    app.template_filter('formatted_time')(current_time)
+    # app.template_filter('formatted_time')(current_time)
     app.context_processor(current_time)
 
 if __name__ == '__main__':

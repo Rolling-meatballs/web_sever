@@ -102,7 +102,7 @@ def fake_data():
 
 
 if __name__ == '__main__':
-    # recreate_database()
-    # fake_data()
-    test_one()
+    recreate_database()
+    fake_data()
+    # test_one()
     # test_all()
