@@ -22,20 +22,20 @@ def request_from_connection(connection):
             return request
 
 
-def process_request(connection):
+def process_request(connection, application):
     with connection:
         r = request_from_connection(connection)
         log('request log:\n <{}>'.format(r))
         # 把原始请求数据传给 Request 对象
         request = Request(r)
         # 用 response_for_path 函数来得到 path 对应的响应内容
-        response = response_for_path(request)
+        response = application(request)
         log("response log:\n <{}>".format(response))
         # 把响应发送给客户端
         connection.sendall(response)
 
 
-def run(host, port):
+def run(host, port, application):
     """
     启动服务器
     """
@@ -53,7 +53,7 @@ def run(host, port):
             connection, address = s.accept()
             # 第二个参数类型必须是 tuple
             log('ip {}'.format(address))
-            _thread.start_new_thread(process_request, (connection,))
+            _thread.start_new_thread(process_request, (connection, application))
 
 
 if __name__ == '__main__':

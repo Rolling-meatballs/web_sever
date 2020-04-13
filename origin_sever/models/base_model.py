@@ -27,6 +27,7 @@ class SQLModel(object):
 
     @classmethod
     def table_name(cls):
+        # return '`{}`'.format(cls.__name__.lower())
         return '`{}`'.format(cls.__name__)
 
     @classmethod
@@ -51,7 +52,7 @@ class SQLModel(object):
         # )
         sql_keys = ', '.join(['`{}`'.format(k) for k in form.keys()])
         sql_values = ', '.join(['%s'] * len(form))
-        sql_insert = 'INSERT NTO {} ({}) VALUES ({})'.format(
+        sql_insert = 'INSERT INTO {} ({}) VALUES ({})'.format(
             cls.table_name(),
             sql_keys,
             sql_values,
@@ -59,6 +60,7 @@ class SQLModel(object):
         log('ORM insert <{}>'.format(sql_insert))
 
         values = tuple(form.values())
+        log ('ORM insert values', values)
 
         # try:
         #   cursor = cls.connection.cursor()
