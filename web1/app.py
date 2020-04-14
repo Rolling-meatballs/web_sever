@@ -18,8 +18,6 @@ from routes.routes_weibo import bp as weibo_bp
 
 
 
-
-
 def error_view(error):
     return 'self_set 404'
 
@@ -32,6 +30,7 @@ def current_time():
 
 
 def configured_app():
+    url_map = {}
     app = Flask(__name__)
     # app.register_blueprint(public_bp)
     # app.register_blueprint(user_bp)
@@ -41,6 +40,8 @@ def configured_app():
     app.errorhandler(404)(error_view)
     # app.template_filter('formatted_time')(current_time)
     app.context_processor(current_time)
+
+    return app
 
 if __name__ == '__main__':
     SQLModel.init_db()
