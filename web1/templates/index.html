@@ -5,14 +5,15 @@
     <title>吃瓜主页</title>
 </head>
 <body>
-    <h1>Hello {{username}}</h1>
-    <a href="/user/register/view">Register</a>
-    <a href="/user/login/view">Login</a>
+    <h1>Hello {{ username }}</h1>
+    <h2>time {{ current_time | formatted_time }}</h2>
+    <a href="{{ url_for('user.register_view') }}">Register</a>
+    <a href="{{ url_for('user.login_view') }}">Login</a>
     <a href="/todo/index">Todo</a>
     <a href="/weibo/index">Weibo</a>
     <a href="/messages/index">Messages</a>
-    <img src="/static?file=doge.gif"/>
-    <img src="/static?file=doge1.jpg"/>
-    <img src="/static?file=doge2.gif"/>
+    <img src="/static/doge.gif"/>
+    <img src="/static/doge1.jpg"/>
+    <img src="/static/doge2.gif"/>
 </body>
 </html>

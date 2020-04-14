@@ -1,3 +1,5 @@
+import time
+
 from flask import (
     Blueprint,
     render_template,
@@ -18,7 +20,7 @@ def index():
     主页的处理函数, 返回主页的响应
     """
     u = current_user()
-    return render_template('index.html', username=u.username)
+    return render_template('index.html', username=u.username, current_time=time.time())
 
 
 # def static(request):
@@ -34,13 +36,13 @@ def index():
 #         return img
 
 
-def route_dict():
-    """
-    路由字典
-    key 是路由(路由就是 path)
-    value 是路由处理函数(就是响应)
-    """
-    d = {
-        '/': index,
-    }
-    return d
+# def route_dict():
+#     """
+#     路由字典
+#     key 是路由(路由就是 path)
+#     value 是路由处理函数(就是响应)
+#     """
+#     d = {
+#         '/': index,
+#     }
+#     return d

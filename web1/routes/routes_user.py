@@ -75,11 +75,13 @@ def register():
 
 
 @bp.route('/user/register/view')
-def register_view(request):
+def register_view():
     # result = request.query.get('result', '')
     # result = unquote_plus(result)
 
-    return render_template('register.html')
+    return render_template('register.html',
+                           # result=result
+                           )
 
 
 # RESTFul

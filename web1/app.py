@@ -29,6 +29,13 @@ def current_time():
     return dict(current_time=formatted)
 
 
+def formatted_time(value):
+    time_format = '%Y/%m/%d %H:%M:%S'
+    localtime = time.localtime(int(value))
+    formatted = time.strftime(time_format, localtime)
+    return formatted
+
+
 def configured_app():
     app = Flask(__name__)
     app.register_blueprint(public_bp)
@@ -38,7 +45,7 @@ def configured_app():
     SQLModel.init_db()
 
     app.errorhandler(404)(error_view)
-    # app.template_filter('formatted_time')(current_time)
+    app.template_filter('formatted_time')(formatted_time)
     app.context_processor(current_time)
 
     return app
