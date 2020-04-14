@@ -27,7 +27,7 @@ class SQLModel(object):
 
     @classmethod
     def table_name(cls):
-        return '`{}`'.format(cls.__name__)
+        return '`{}`'.format(cls.__name__.lower())
 
     @classmethod
     def new(cls, form):
