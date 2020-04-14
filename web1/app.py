@@ -32,9 +32,9 @@ def current_time():
 def configured_app():
     url_map = {}
     app = Flask(__name__)
-    # app.register_blueprint(public_bp)
-    # app.register_blueprint(user_bp)
-    # app.register_blueprint(weibo_bp)
+    app.register_blueprint(public_bp)
+    app.register_blueprint(user_bp)
+    app.register_blueprint(weibo_bp)
     SQLModel.init_db()
 
     app.errorhandler(404)(error_view)
