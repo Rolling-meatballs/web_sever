@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+  <link rel="stylesheet" href="../static/index.min.23a5b1ca.min.css" media="all">
+    <meta charset="UTF-8">
+    <title>@Rolling-meatballs 的个人主页 - CNode技术社区</title>
+</head>
+<body>
+<div id="main">
+<div id="content">
+  <div class="panel">
+    <div class="header">
+      <ul class="breadcrumb">
+        <li><a href="https://cnodejs.org/">主页</a><span class="divider">/</span></li>
+      </ul>
+    </div>
+    <div class="inner userinfo">
+      <div class="user_big_avatar">
+        <img src="../static/doge.gif" class="user_avatar" title="Rolling-meatballs">
+      </div>
+      <a class="dark">Rolling-meatballs</a>
+
+      <div class="user_profile">
+        <ul class="unstyled">
+          <span class="big">15</span> 积分
+
+
+
+
+          <li>
+            <i class="fa fa-lg fa-fw fa-github"></i>
+            <a class="dark" href="https://github.com/Rolling-meatballs" target="_blank">
+              @Rolling-meatballs
+            </a>
+          </li>
+
+
+        </ul>
+      </div>
+
+
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="header">
+      <span class="col_fade">最近创建的话题</span>
+    </div>
+ {% for w in profile %}
+    <div class="cell">
+
+  <a class="user_avatar pull-left" >
+    <img src="../static/doge.gif" title="Rolling-meatballs">
+  </a>
+
+  <span class="reply_count pull-left">
+    <span class="count_of_replies" title="回复数">
+      {{ huifu }}
+    </span>
+    <span class="count_seperator">/</span>
+    <span class="count_of_visits" title="点击数">
+      {{ dianji }}
+    </span>
+  </span>
+
+
+
+    <span class="last_time pull-right">
+      <span class="last_active_time">{{ time }}</span>
+    </span>
+
+
+  <div class="topic_title_wrapper">
+
+
+
+
+
+    <a class="topic_title" >
+      {{ massage }}
+    </a>
+  </div>
+</div>
+
+
+    <div class="cell more">
+      <a class="dark" >查看更多»</a>
+    </div>
+
+  </div>
+
+  <div class="panel">
+    <div class="header">
+      <span class="col_fade">最近参与的话题</span>
+    </div>
+{% endfor %}
+
+
+{% for w in weibos %}
+    <div class="cell">
+
+  <a class="user_avatar pull-left" >
+    <img src="../static/doge1.jpg" title="alsotang">
+  </a>
+
+  <span class="reply_count pull-left">
+    <span class="count_of_replies" title="回复数">
+      {{ huifushu }}
+    </span>
+    <span class="count_seperator">/</span>
+    <span class="count_of_visits" title="点击数">
+      {{ dianjishu }}
+    </span>
+  </span>
+
+
+  <a class="last_time pull-right" >
+    <img class="user_small_avatar" src="../static/doge1.jpg">
+    <span class="last_active_time">{{ fabushijian }}</span>
+  </a>
+
+
+
+  <div class="topic_title_wrapper">
+
+
+<span class="put_top">置顶</span>
+
+
+
+    <a class="topic_title" >
+      {{ huati }}
+    </a>
+  </div>
+</div>
+
+    <div class="cell more">
+      <a class="dark" href="https://cnodejs.org/user/Rolling-meatballs/replies">查看更多»</a>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>
