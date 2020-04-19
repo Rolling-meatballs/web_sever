@@ -7,6 +7,7 @@ from models.base_model import db
 from models.user import User
 from models.topic import Topic
 from models.reply import Reply
+from models.board import Board
 
 
 def reset_database():
@@ -30,13 +31,23 @@ def generate_fake_data():
     )
     u = User.register(form)
 
+    form = dict(
+        title='all'
+    )
+    b = Board.new(form)
+    form = dict(
+        title='test'
+    )
+    b = Board.new(form)
+
     with open('markdown_demo.md', encoding='utf8') as f:
         content = f.read()
     form = dict(
         title='markdown demo',
+        board_id=b.id,
         content=content,
     )
-    Topic.add(form, u.id)
+    Topic.new(form, u.id)
 
 
 if __name__ == '__main__':

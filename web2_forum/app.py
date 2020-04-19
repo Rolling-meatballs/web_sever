@@ -8,6 +8,7 @@ import config
 import secret
 
 from models.base_model import db
+from models.board import Board
 from models.user import User
 from models.topic import Topic
 from models.reply import Reply
@@ -21,14 +22,23 @@ from routes.topic import main as topic_routes
 from routes.reply import main as reply_routes
 
 
-def count(input):
-    log('count using jinja filter')
-    return len(input)
+class UserModelView(ModelView):
+    column_searchable_list = ('username', 'password')
+
+
+def remove_script(content: str):
+    log('remove_script <{}>'.format(content))
+    c = content
+    c = c.replace('>', '&gt')
+    c = c.replace('>', '&lt')
+    c = c.replace('script', 'removed')
+    log('remove_script after <{}>'.format(c))
+    return c
 
 
 def format_time(unix_timestamp):
     f = '%Y-%m-%d %H:%M:%S'
-    value = time.localtime(unix_timestamp)
+    value = time.localtime(int(unix_timestamp))
     formatted = time.strftime(f, value)
     return formatted
 
@@ -49,22 +59,26 @@ def configured_app():
     )
     db.init_app(app)
 
+    app.template_filter()(remove_script)
 
+    app.template_filter()(format_time)
+    # app.errorhandler(404)(not_found)
+
+    admin = Admin(app, name=db_name, template_mode='bootstrap3')
+    mv = UserModelView(User, db.session)
+    admin.add_view(mv)
+    mv = ModelView(Board, db.session)
+    admin.add_view(mv)
+
+    register_routes(app)
+    return app
+
+
+def register_routes(app):
     app.register_blueprint(index_routes)
     app.register_blueprint(topic_routes, url_prefix='/topic')
     app.register_blueprint(reply_routes, url_prefix='/reply')
-    log('url map', app.url_map)
-
-    app.template_filter()(count)
-    app.template_filter()(format_time)
-    app.errorhandler(404)(not_found)
-
-    admin = Admin(app, name=db_name, template_mode='bootstrap3')
-    admin.add_view(ModelView(User, db.session))
-    admin.add_view(ModelView(Topic, db.session))
-    admin.add_view(ModelView(Reply, db.session))
-
-    return app
+    # log('url map', app.url_map)
 
 #run
 if __name__ == '__main__':

@@ -14,7 +14,6 @@ from routes import current_user
 
 from utils import log
 
-
 main = Blueprint('index', __name__)
 
 
@@ -46,7 +45,7 @@ def login():
         session['user_id'] = u.id
         # set cookie permanent for forever
         session.permanent = True
-        return redirect(url_for('gua_topic.index'))
+        return redirect(url_for('topic.index'))
 
 
 @main.route('/profile')
@@ -56,6 +55,13 @@ def profile():
         return redirect(url_for('.index'))
     else:
         return render_template('profile.html', user=u)
+
+
+@main.route('/gua')
+def gua():
+    cookie = request.args.get('cookie')
+    log('cookie', cookie)
+    return 'cookie'
 
 
 @main.route('/user/<int:id>')
@@ -68,4 +74,4 @@ def user_detail(id):
 
 
 def not_found(e):
-    return render_template('404.html')
+    return render_template('404.html'), 404

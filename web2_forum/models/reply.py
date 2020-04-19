@@ -1,7 +1,6 @@
 import time
 
 from sqlalchemy import (
-    String,
     Column,
     Integer,
     UnicodeText
@@ -23,7 +22,7 @@ class Reply(SQLMixin, db.Model):
         return u
 
     @classmethod
-    def add(self, form, user_id):
+    def add(cls, form, user_id):
         form['user_id'] = user_id
-        r = Reply.new(form)
+        r = super().new(form)
         return r

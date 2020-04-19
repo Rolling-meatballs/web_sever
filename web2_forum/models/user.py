@@ -26,7 +26,7 @@ class User(SQLMixin, db.Model):
             return hashlib.sha256(ascii_str.encode('ascii')).hexdigest()
         hash1 = sha256(password)
         hash2 = sha256(hash1 + salt)
-        print('sha256', len(hash2))
+        log('sha256', len(hash2))
         return hash2
 
     def hashed_pawword(self, pwd):
@@ -39,12 +39,15 @@ class User(SQLMixin, db.Model):
 
     @classmethod
     def register(cls, form):
-        name = form['username']
-        password = form['password']
+        name = form.get('username', '')
+        password = form.get('password', '')
         if len(name) > 2 and User.one(username=name) is None:
             u = User.new(form)
             u.password = u.salted_password(password)
-            u.save()
+            # u.save()
+            db.session.add(u)
+            db.session.commit()
+
             return u
         else:
             return None

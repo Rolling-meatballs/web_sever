@@ -7,22 +7,38 @@ from sqlalchemy import (
     Integer,
     String,
 )
+from sqlalchemy.orm import Query
+
+from utils import log
 
 db = SQLAlchemy()
 
 
+def utctime():
+    return int(time.time())
+
+
 class SQLMixin(object):
     id = Column(Integer, primary_key=True, nullable=False, autoincrement=True )
-    created_time = Column(Integer, default=int(time.time()))
-    updated_time = Column(Integer, default=int(time.time()))
+    created_time = Column(Integer, default=utctime)
+    updated_time = Column(Integer, default=utctime)
 
     @classmethod
     def new(cls, form):
         m = cls()
         for name , value in form.items():
             setattr(m, name, value)
+
         m.save()
+        # db.session.add(m)
+        # db.session.commit()
+
         return m
+
+    @classmethod
+    def delete(cls, id):
+        cls.query.filter_by(id=id).delete()
+        db.session.commit()
 
     @classmethod
     def update(cls, id, **kwargs):
@@ -30,6 +46,8 @@ class SQLMixin(object):
         for name, value in kwargs.items():
             setattr(m, name, value)
         m.save()
+        # db.session.add(m)
+        # db.session.commit()
 
     @classmethod
     def all(cls, **kwargs):
@@ -56,6 +74,8 @@ class SQLMixin(object):
         return '< {}\n{} \n>\n'.format(classname, s)
 
     def save(self):
+        # log('save db', db.session)
+        # log('save self', self)
         db.session.add(self)
         db.session.commit()
 

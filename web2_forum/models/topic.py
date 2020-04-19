@@ -16,6 +16,7 @@ from models.base_model import (
 )
 from models.user import User
 from models.reply import Reply
+from utils import log
 
 
 class Topic(SQLMixin, db.Model):
@@ -23,9 +24,10 @@ class Topic(SQLMixin, db.Model):
     title = Column(Unicode(50), nullable=False)
     content = Column(UnicodeText, nullable=False)
     user_id = Column(Integer, nullable=False)
+    board_id = Column(Integer, nullable=False)
 
     @classmethod
-    def add(cls, form, user_id):
+    def new(cls, form, user_id):
         form['user_id'] = user_id
         m = super().new(form)
         return m
@@ -34,6 +36,7 @@ class Topic(SQLMixin, db.Model):
     def get(cls, id):
         m = cls.one(id=id)
         m.view += 1
+        log('get m', m)
         m.save()
         return m
 
