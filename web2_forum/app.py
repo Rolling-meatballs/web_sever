@@ -43,6 +43,13 @@ def format_time(unix_timestamp):
     return formatted
 
 
+def current_time():
+    time_format = '%Y/%m/%d %H:%M:%S'
+    localtime = time.localtime(int(time.time()))
+    formatted = time.strftime(time_format, localtime)
+    return dict(current_time=formatted)
+
+
 def configured_app():
     db_name = config.db_name
     app = Flask(__name__)
@@ -60,7 +67,7 @@ def configured_app():
     db.init_app(app)
 
     app.template_filter()(remove_script)
-
+    # app.context_processor(current_time)
     app.template_filter()(format_time)
     # app.errorhandler(404)(not_found)
 
