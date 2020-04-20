@@ -54,7 +54,7 @@ def configured_app():
     db_name = config.db_name
     app = Flask(__name__)
     # set secret_key for flask session
-    app.secret_key = config.secret_key
+    app.secret_key = secret.secret_key
     # data return order
     #mysql -> pymysql -> sqlalchemy -> route
     #initialization order
