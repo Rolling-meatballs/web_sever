@@ -2,4 +2,4 @@
 *.pyc
 secret.py
 *.txt
-.sh
+*.sh
